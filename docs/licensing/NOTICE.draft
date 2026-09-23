@@ -1,0 +1,17 @@
+<Project name>
+Copyright (C) 2026 <Your Name>
+
+This product includes or depends on the following third-party software.
+Fill in ONLY after checking each licence file (see docs/licensing/dependency-compatibility.md).
+
+NimBLE-Arduino 1.4.3 (h2zero) - Apache License 2.0   [verified: LICENSE in the PlatformIO libdeps copy]
+pyserial            - BSD-3-Clause   [UNVERIFIED]
+Pillow              - HPND           [UNVERIFIED]
+requests            - Apache-2.0     [UNVERIFIED]
+bleak               - MIT            [UNVERIFIED]
+Arduino-ESP32 core  - LGPL-2.1+ (ESP-IDF: Apache-2.0)  [UNVERIFIED; needed only if firmware binaries are distributed]
+
+Fonts (DejaVu, Bitstream Vera licence) are loaded from the operating system and are
+not distributed with this project [UNVERIFIED].
+
+Reproduce here any NOTICE text supplied by an Apache-2.0 component you redistribute.
