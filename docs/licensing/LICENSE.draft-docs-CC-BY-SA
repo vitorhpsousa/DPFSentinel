@@ -1,0 +1,13 @@
+DOCS LICENCE DRAFT  (not legal advice)
+
+Documentation and images under docs/ : Creative Commons Attribution-ShareAlike 4.0
+International (CC BY-SA 4.0). Full legal code (copy unmodified):
+
+  https://creativecommons.org/licenses/by-sa/4.0/legalcode.txt
+
+Notice to place in docs/README or in LICENSE-docs:
+
+  Copyright (c) 2026 <Your Name>. The documentation in this directory, including
+  images, is licensed under CC BY-SA 4.0 (https://creativecommons.org/licenses/by-sa/4.0/).
+  Source code is licensed separately (see the LICENSE file at the repository root).
+  Screenshots or photos not created by the author are excluded and keep their own terms.

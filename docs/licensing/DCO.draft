@@ -1,0 +1,8 @@
+Developer Certificate of Origin, Version 1.1
+Text is published at https://developercertificate.org/ under the terms stated there
+(verbatim copying permitted, changing not allowed). Copy the official text into a file
+named DCO at the repository root; it is not reproduced here to avoid altering it.
+
+Usage summary: every commit needs a line
+  Signed-off-by: Random J Developer <random@developer.example.org>
+Produce it with:  git commit -s
