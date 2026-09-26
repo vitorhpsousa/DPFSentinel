@@ -144,3 +144,6 @@
 
 // Speaker alerts (ES8311): built and verified separately in ../audio_test; not part of the logger yet.
 #define AUDIO_ENABLED 1
+
+// Boot sound: 0 = soft chirp, 1 = Rondo alla Turca (Mozart), 2 = Eine kleine Nachtmusik (Mozart); audition over USB serial with the character 1 or 2.
+#define BOOT_JINGLE 1

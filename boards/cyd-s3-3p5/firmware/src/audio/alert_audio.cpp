@@ -76,7 +76,12 @@ static void playTone(const Tone &t) {
       float env = 1.0f;
       if (n < ramp) env = (float)n / ramp;
       else if (total - n < ramp) env = (float)(total - n) / ramp;
+#if AUDIO_SQUARE
+      // 8-bit arcade voice: square wave (harsher, so scaled down to keep the loudness comparable to the sine)
+      int16_t s = t.hz ? (int16_t)((sinf(phase) >= 0 ? 0.55f : -0.55f) * amp * env) : 0;
+#else
       int16_t s = t.hz ? (int16_t)(sinf(phase) * amp * env) : 0;
+#endif
       phase += inc; if (phase > 2.0f * (float)M_PI) phase -= 2.0f * (float)M_PI;
       buf[2 * i] = s; buf[2 * i + 1] = s;
     }
@@ -150,13 +155,32 @@ void audioAlert(AlertKind kind) {
   if (s_muted) return;
   const uint8_t v = AUDIO_MAX_VOLUME_PCT;
   switch (kind) {
-    case REGEN_START: enqueue(650, 90, v); enqueue(950, 130, v); break;                               // rising pair
-    case REGEN_END:   enqueue(950, 90, v); enqueue(650, 130, v); break;                               // falling pair
-    case SOOT_AMBER:  enqueue(880, 110, v); enqueue(0, 70, 0); enqueue(880, 110, v); break;           // double beep
-    case SOOT_RED:    for (int i = 0; i < 3; i++) { enqueue(1100, 90, v); enqueue(0, 50, 0); } enqueue(700, 250, v); break; // triple + long low
+    // Original arcade-style alerts (own melodies), square-wave voice.
+    case REGEN_START: enqueue(784, 80, v); enqueue(0, 30, 0); enqueue(1047, 150, v); break;                     // "engage"
+    case REGEN_END:   { static const uint16_t n[] = {523, 659, 784, 1047, 0, 784, 1047}; static const uint16_t d[] = {70, 70, 70, 70, 30, 70, 240};
+                        for (int i = 0; i < 7; i++) enqueue(n[i], d[i], n[i] ? v : 0); } break;                 // rising "level up"
+    case SOOT_AMBER:  enqueue(880, 100, v); enqueue(0, 60, 0); enqueue(880, 100, v); enqueue(0, 60, 0); enqueue(988, 170, v); break; // caution
+    case SOOT_RED:    { static const uint16_t n[] = {1047, 0, 1047, 0, 880, 784, 698, 587}; static const uint16_t d[] = {70, 40, 70, 80, 150, 150, 150, 450};
+                        for (int i = 0; i < 8; i++) enqueue(n[i], d[i], n[i] ? v : 0); } break;                 // two blips + falling "game over" feel
     case READY:       enqueue(700, 70, 30); enqueue(1000, 110, 30); break;                            // soft chirp
     case TEST:        enqueue(1000, 150, v); break;
   }
+}
+
+// Boot tunes: Mozart (public domain), transposed up an octave because this speaker is quiet below ~600 Hz.
+// {hz, ms}; hz 0 = rest. At most 14 entries so they fit the 16-slot queue.
+struct Note { uint16_t hz, ms; };
+// Mozart (public domain), transposed up an octave: this speaker is quiet below ~600 Hz.
+static const Note J4[] = {{988,90},{880,90},{831,90},{880,90},{1047,260},{1175,90},{1047,90},{988,90},{1047,90},{1319,300}};     // Rondo alla Turca, opening
+static const Note J5[] = {{784,140},{0,25},{1175,140},{784,120},{0,25},{1175,140},{784,110},{1175,110},{784,110},{988,110},{1175,320}}; // Eine kleine Nachtmusik, opening
+void audioJingle(uint8_t variant) {
+  if (s_muted) return;
+  const Note *tabs[] = {nullptr, J4, J5};   // 1 = Rondo alla Turca (chosen), 2 = Eine kleine Nachtmusik
+  const size_t lens[] = {0, sizeof J4 / sizeof *J4, sizeof J5 / sizeof *J5};
+  if (variant > 2) return;
+  const Note *n = tabs[variant];
+  size_t len = lens[variant];
+  for (size_t i = 0; i < len; i++) enqueue(n[i].hz, n[i].ms, n[i].hz ? AUDIO_MAX_VOLUME_PCT : 0);
 }
 
 void audioSetMuted(bool m) { s_muted = m; }
