@@ -1,0 +1,3 @@
+# src/config.h holds real Telegram token / WiFi passwords: never commit it (copy config.example.h)
+src/config.h
+.pio/
