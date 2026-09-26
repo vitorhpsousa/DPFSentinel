@@ -193,6 +193,7 @@ void setup() {
     pd.tripSootStart = pd.tripSootPeak = NAN;
     if (!touchBegin()) Serial.println("Touch init failed");
     if (!audioBegin()) Serial.println("Audio init failed (no beeps)");
+    else if (BOOT_JINGLE >= 1 && BOOT_JINGLE <= 2) audioJingle(BOOT_JINGLE);
     else audioAlert(READY);   // Wire is already up from touchBegin()
 #endif
 
@@ -271,6 +272,39 @@ static void trackTrip() {
     }
 }
 
+// ---- Demo mode: cycles fake states like the Pi demo, with the matching sounds and the Rondo at the start.
+static bool demoActive = false;
+static uint32_t demoStart = 0;
+static int demoLastIdx = -1;
+static const uint32_t DEMO_STATE_MS = 8000;
+static void demoToggle() {
+    demoActive = !demoActive;
+    demoStart = millis(); demoLastIdx = -1;
+    if (demoActive) { pagesGoto(PAGE_SOOT); audioJingle(1); }
+    Serial.printf("demo %s\n", demoActive ? "ON" : "OFF");
+}
+// Returns the demo UiState for the current step and plays that step's sound when it changes.
+static void demoFill(UiState &st) {
+    static const float soot[7]  = {NAN, NAN, 8.2f, 15.5f, 21.0f, 28.0f, 30.2f};
+    static const float egt[7]   = {NAN, NAN, 245, 310, 480, 520, 600};
+    int idx = ((millis() - demoStart) / DEMO_STATE_MS) % 7;
+    if (idx != demoLastIdx) {
+        if (idx == 3) audioAlert(SOOT_AMBER);
+        else if (idx == 4) audioAlert(SOOT_RED);
+        else if (idx == 6) audioAlert(REGEN_START);
+        else if (idx == 0 && demoLastIdx == 6) audioAlert(REGEN_END);
+        demoLastIdx = idx;
+    }
+    st.hasData = idx >= 1;
+    st.stale = idx <= 1;
+    if (idx >= 2) {
+        st.soot = soot[idx]; st.catTemp = egt[idx]; st.rpm = idx == 6 ? 1900 : 1450; st.speed = idx == 6 ? 0 : 42;
+        st.coolant = 88; st.diffP = 8.0f + idx * 3; st.intercooler = 61; st.maf = 24.3f;
+        st.sinceRegen = idx >= 4 ? 180.0f + idx * 40 : 87.4f; st.odometer = 125760;
+        st.regen = (idx == 6);
+    }
+}
+
 static void updateScreen() {
     UiState st;
     st.soot = values[colSoot]; st.rpm = values[colRpm]; st.speed = values[colSpeed];
@@ -291,7 +325,8 @@ static void updateScreen() {
         else snprintf(st.clock, sizeof st.clock, "clock not set");
     }
 
-    trackTrip();
+    if (demoActive) demoFill(st);
+    else trackTrip();
     pd.sootHistoryStepMin = 1;
     pd.bleLinked = elm.connected();
     snprintf(pd.sdBackend, sizeof pd.sdBackend, "%s", store.backend());
@@ -346,6 +381,12 @@ static void serialCommands() {
         char c = Serial.read();
         if (c == 'd') { Serial.println("--- dumping logs ---"); store.dumpAll(Serial); Serial.println("--- dump complete ---"); }
         else if (c == 'p') { store.tailSession(Serial, bootNumber - 1, 240); }
+        else if (c == 'D') demoToggle();
+        else if (c == 'r') { Serial.println("alert red"); audioAlert(SOOT_RED); }
+        else if (c == 'l') { Serial.println("alert regen end"); audioAlert(REGEN_END); }
+        else if (c == 'a') { Serial.println("alert amber"); audioAlert(SOOT_AMBER); }
+        else if (c == 's') { Serial.println("alert regen start"); audioAlert(REGEN_START); }
+        else if (c >= '1' && c <= '2') { Serial.printf("jingle %c\n", c); audioJingle(c - '0'); }
         else if (c == 'e') { store.eraseAll(); Serial.println("--- logs erased, reboot to start a new session ---"); }
     }
 }
