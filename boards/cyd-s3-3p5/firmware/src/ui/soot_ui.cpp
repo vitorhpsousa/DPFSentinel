@@ -86,17 +86,22 @@ void uiDraw(const UiState &s) {
         return;
     }
     if (s.regen) {
+        // Regen screen: the warning stays on top; below it a 3 x 3 grid of the live driving data.
         const uint16_t amber = rgb(0xff, 0xc0, 0x40);
         const int mw = W - 2 * MARGIN;
-        centeredT("ACTIVE REGENERATION", cx, 8, fit("ACTIVE REGENERATION", mw, F_HDR), fg);
-        const AAFont &f1 = fit("DO NOT SWITCH OFF", mw, F_RG1);
-        centeredT("DO NOT SWITCH OFF", cx, 42, f1, amber);
-        centeredT("UNTIL IT FINISHES", cx, 76, f1, amber);
-        centeredT(soot, cx, 104, fit(soot, mw, F_HUGE), fg);
-        centeredT("SOOT LEVEL", cx, 192, aaR20, fg);
-        char b[32];
-        snprintf(b, sizeof b, "Cat. Temp %s", v[4]);
-        centeredT(b, cx, 222, fit(b, mw, F_VAL), fg);
+        centeredT("ACTIVE REGENERATION", cx, 6, fit("ACTIVE REGENERATION", mw, F_HDR), fg);
+        const char *warn = "DO NOT SWITCH OFF UNTIL IT FINISHES";
+        centeredT(warn, cx, 38, fit(warn, mw, F_RG1), amber);
+        static const char *rl[9] = {"Soot", "RPM", "Speed", "Cat. Temp", "Coolant", "Diff P.", "Since Regen", "Intercooler", "MAF"};
+        const char *rv[9] = {soot, v[0], v[1], v[4], v[2], v[3], v[7], v[5], v[6]};
+        const int cw = W / 3, cellW2 = cw - MARGIN - 2;
+        const int gtop = 74, rowH2 = 68;
+        for (int n = 0; n < 9; n++) {
+            int x = (n % 3) * cw + MARGIN;
+            int ry = gtop + (n / 3) * rowH2;
+            leftB(rl[n], x, ry + 15, aaR17, lbl);
+            leftB(rv[n], x, ry + 46, fit(rv[n], cellW2, F_BIG), n == 0 ? amber : fg);   // soot in amber: the number to watch
+        }
         drawNet(s, H - MARGIN - aaR14.height, F_NET + 2, 1, lbl);
         return;
     }
