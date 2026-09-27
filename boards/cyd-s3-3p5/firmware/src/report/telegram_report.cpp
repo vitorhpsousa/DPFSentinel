@@ -216,6 +216,96 @@ static void drainEvents() {
     }
 }
 
+// ---- incoming "/status" command: a grounded report, real numbers only, no invented thresholds ----
+// Polled via getUpdates (long polling off — timeout=0 — so this never blocks the report task for long).
+// Only messages from the configured TG_CHAT_ID are ever acted on. Parsing is deliberately crude string
+// scanning (matching the rest of this file's style) rather than a JSON library dependency.
+static long gUpdateOffset = 0;
+
+static bool getUpdates(String &body) {
+    WiFiClientSecure tls; WiFiClient plain; Client *c = nullptr;
+    if (!openConn(tls, plain, c)) return false;
+    String path = String("/bot") + TG_BOT_TOKEN + "/getUpdates?offset=" + String(gUpdateOffset) + "&timeout=0&limit=5";
+    c->print(String("GET ") + path + " HTTP/1.1\r\nHost: " + TG_HOST + "\r\nConnection: close\r\n\r\n");
+    bool ok = readReply(*c, body);
+    c->stop();
+    return ok;
+}
+
+// Extracts the string value of a "key":"value" pair after `from` in a crude, non-JSON-library way
+// (values here never contain an escaped quote, which holds for chat ids, update ids and plain text
+// status commands). Returns "" if not found.
+static String extractAfter(const String &body, const String &key, int from) {
+    int k = body.indexOf(key, from);
+    if (k < 0) return "";
+    int q1 = body.indexOf('"', k + key.length());
+    if (q1 < 0) return "";
+    int q2 = body.indexOf('"', q1 + 1);
+    if (q2 < 0) return "";
+    return body.substring(q1 + 1, q2);
+}
+
+// Builds the "/status" reply: every figure is either read live from the ECU right now, or is one of
+// this project's own measured constants (see research_paper/reverse_engineering_dpf_monitoring.md
+// section 3.3) — nothing here is an invented threshold or a generic industry table.
+static String statusReplyText() {
+    auto v = [](const char *n) { return webUiValue(n); };
+    float soot = v("dpf_soot_level_g");
+    struct tm tmv; time_t now = time(nullptr); localtime_r(&now, &tmv);
+    char t[16]; strftime(t, sizeof(t), "%H:%M", &tmv);
+
+    String out = String("Status ") + t + "\n";
+    if (!isnan(soot)) {
+        out += "[MEASURED] soot " + String(soot, 1) + " g, " + String(v("dpf_dist_since_regen_mi"), 1) +
+               " mi since regen, DPF diff P " + String(v("dpf_diff_pressure_hpa"), 0) + " hPa\n";
+        out += "[MEASURED] rpm " + String(v("engine_rpm"), 0) + ", speed " + String(v("vehicle_speed"), 0) +
+               " km/h, EGT " + String(v("egt_before_dpf_c"), 0) + " C, battery " + String(v("control_module_v"), 1) + " V\n";
+    } else {
+        // Matches liveStatusLine()'s existing behaviour: no separate "read the last logged row from
+        // SD" path yet (SessionStore has no such accessor) -- a real gap, not silently guessed around.
+        out += "Car off or adapter out of range right now -- no live reading to report.\n";
+    }
+
+    if (!isnan(soot)) {
+        // This project's own three measured regeneration events (17.6, 17.6, 18.0 g) — not a manufacturer
+        // spec, not a generic table, our own car's real trigger range.
+        const float TRIGGER_LOW = 17.6f, TRIGGER_HIGH = 18.0f;
+        const float RATE_STEADY_LOW = 0.18f, RATE_STEADY_HIGH = 0.35f;   // measured: warm, steady driving
+        const float RATE_SHORT_LOW = 0.6f, RATE_SHORT_HIGH = 1.1f;       // measured: short, cold trips
+        if (soot >= TRIGGER_HIGH) {
+            out += "[MEASURED] already at or above this car's regen trigger range -- expect one to start on the next warm drive.\n";
+        } else {
+            float steadyMi = (TRIGGER_LOW - soot) / RATE_STEADY_HIGH;
+            float steadyMiMax = (TRIGGER_HIGH - soot) / RATE_STEADY_LOW;
+            float shortMi = (TRIGGER_LOW - soot) / RATE_SHORT_HIGH;
+            float shortMiMax = (TRIGGER_HIGH - soot) / RATE_SHORT_LOW;
+            out += "[INFERRED, from this car's own measured rates] roughly " + String(steadyMi, 0) + "-" + String(steadyMiMax, 0) +
+                   " mi of steady driving, or " + String(shortMi, 0) + "-" + String(shortMiMax, 0) +
+                   " mi of short cold trips, before the next regen.\n";
+        }
+    }
+    return out;
+}
+
+static void pollStatusCommand() {
+    String body;
+    if (!getUpdates(body)) return;
+    int pos = 0;
+    for (;;) {
+        int idPos = body.indexOf("\"update_id\":", pos);
+        if (idPos < 0) break;
+        long id = body.substring(idPos + 12, body.indexOf(',', idPos)).toInt();
+        if (id >= gUpdateOffset) gUpdateOffset = id + 1;   // ack every update seen, even ones we ignore below
+        String chatId = extractAfter(body, "\"chat\":{\"id\":", idPos);
+        String text = extractAfter(body, "\"text\":", idPos);
+        pos = idPos + 12;
+        if (chatId != String(TG_CHAT_ID)) continue;        // only the configured chat is ever acted on
+        text.trim();
+        text.toLowerCase();
+        if (text == "/status" || text == "status") sendMessage(statusReplyText());
+    }
+}
+
 static uint32_t gLastStatusMs = 0;
 static volatile bool gForceStatus = false;
 
@@ -227,6 +317,7 @@ static void reportTask(void *) {
         vTaskDelay(pdMS_TO_TICKS(5000));
         if (strlen(TG_BOT_TOKEN) == 0 || WiFi.status() != WL_CONNECTED || !timeValid()) continue;
         drainEvents();                                   // alerts first, every 5 s
+        pollStatusCommand();                              // then check for an incoming /status request
 #if TG_STATUS_ENABLED
         // Only reachable while the outer check above already found it online,
         // so this can't build a backlog while offline — it just doesn't run.
