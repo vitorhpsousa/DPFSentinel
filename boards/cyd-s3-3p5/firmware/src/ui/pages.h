@@ -23,9 +23,18 @@ struct PagesData {
     bool clockSynced;
     uint32_t uptimeS;
     uint32_t freeHeapKB, freePsramKB;
+
+    // Health page (populated from dpf/health.h each frame; NAN/-1 = unknown).
+    int16_t healthRegensToday;         // -1 = clock not synced yet
+    int16_t healthRegensThisWeek;      // -1 = clock not synced yet
+    float healthAvgRegenIntervalMi;    // NAN = not enough history yet
+    uint16_t healthRegensSinceOil;
+    float healthOilChangeOdometerMi;   // 0 = no reference set yet
+    float healthLastWarmupMin;         // NAN = none recorded this run
+    float healthWarmupMedianMin;       // NAN = no samples yet
 };
 
-enum PageId { PAGE_SOOT, PAGE_TREND, PAGE_TRIP, PAGE_SYSTEM, PAGE_COUNT };
+enum PageId { PAGE_SOOT, PAGE_TREND, PAGE_TRIP, PAGE_HEALTH, PAGE_SYSTEM, PAGE_COUNT };
 
 void pagesBegin();
 void pagesSetMuted(bool m);   // shows a small 'muted' marker bottom-left on every page

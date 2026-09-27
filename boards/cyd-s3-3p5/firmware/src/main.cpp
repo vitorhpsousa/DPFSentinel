@@ -6,6 +6,7 @@
 #include <string.h>
 #include "config.h"
 #include "dpf/dpf_monitor.h"
+#include "dpf/health.h"
 #include "logging/session_store.h"
 #include "obd/elm_client.h"
 #include "obd/isotp.h"
@@ -202,6 +203,7 @@ void setup() {
     bootNumber = prefs.getUInt("boot", 0) + 1;
     prefs.putUInt("boot", bootNumber);
     prefs.end();
+    healthBegin();
 
     for (size_t i = 0; i < COLUMN_COUNT; i++) values[i] = NAN;
     colRpm = colOf("engine_rpm"); colSpeed = colOf("vehicle_speed"); colLoad = colOf("engine_load_pct");
@@ -277,9 +279,9 @@ static bool demoActive = false;
 static uint32_t demoStart = 0;
 static int demoLastIdx = -1;
 static const uint32_t DEMO_STATE_MS = 8000;
-static void demoToggle() {
+static void demoToggle(int startIdx = 0) {
     demoActive = !demoActive;
-    demoStart = millis(); demoLastIdx = -1;
+    demoStart = millis() - (uint32_t)startIdx * DEMO_STATE_MS; demoLastIdx = -1;
     if (demoActive) { pagesGoto(PAGE_SOOT); audioJingle(1); }
     Serial.printf("demo %s\n", demoActive ? "ON" : "OFF");
 }
@@ -342,6 +344,17 @@ static void updateScreen() {
     else snprintf(pd.clockText, sizeof pd.clockText, "not synced");
     pd.uptimeS = millis() / 1000;
     pd.freeHeapKB = ESP.getFreeHeap() / 1024; pd.freePsramKB = ESP.getFreePsram() / 1024;
+    {
+        const HealthState &h = healthGet();
+        pd.batteryV = h.lastBatteryV;
+        pd.healthRegensToday = (int16_t)healthRegensToday();
+        pd.healthRegensThisWeek = (int16_t)healthRegensThisWeek();
+        pd.healthAvgRegenIntervalMi = healthAvgRegenIntervalMi();
+        pd.healthRegensSinceOil = h.regensSinceOil;
+        pd.healthOilChangeOdometerMi = h.oilChangeOdometerMi;
+        pd.healthLastWarmupMin = h.lastWarmupMinutes;
+        pd.healthWarmupMedianMin = healthWarmupMedianMin();
+    }
     pagesRender(st, pd);
 }
 
@@ -382,12 +395,25 @@ static void serialCommands() {
         if (c == 'd') { Serial.println("--- dumping logs ---"); store.dumpAll(Serial); Serial.println("--- dump complete ---"); }
         else if (c == 'p') { store.tailSession(Serial, bootNumber - 1, 240); }
         else if (c == 'D') demoToggle();
+        else if (c == 'G') demoToggle(6);   // demo starting on the regen screen (for review)
         else if (c == 'r') { Serial.println("alert red"); audioAlert(SOOT_RED); }
         else if (c == 'l') { Serial.println("alert regen end"); audioAlert(REGEN_END); }
         else if (c == 'a') { Serial.println("alert amber"); audioAlert(SOOT_AMBER); }
         else if (c == 's') { Serial.println("alert regen start"); audioAlert(REGEN_START); }
         else if (c >= '1' && c <= '2') { Serial.printf("jingle %c\n", c); audioJingle(c - '0'); }
         else if (c == 'e') { store.eraseAll(); Serial.println("--- logs erased, reboot to start a new session ---"); }
+        // 'O' = oil change reference reset. There's no touchscreen keyboard on this board
+        // to enter a value, so instead of a number this just means "reset the counter now,
+        // I just changed the oil": it records the CURRENT odometer reading and zeroes the
+        // regens-since-oil-change counter, persisted to flash immediately. See dpf/health.h.
+        else if (c == 'O') {
+            if (isnan(values[colOdo])) {
+                Serial.println("Oil-change reset ignored: no live odometer reading yet (car not connected). Try again once it's logging.");
+            } else {
+                healthOilChangeNow(values[colOdo]);
+                Serial.printf("Oil-change reference reset at odometer %.1f mi; regens-since-oil counter cleared\n", values[colOdo]);
+            }
+        }
     }
 }
 
@@ -446,6 +472,13 @@ void loop() {
                 else if (ev.type == RegenEvent::END) audioAlert(REGEN_END);
                 reportEvent(ev.text);
             }
+            healthUpdate(values, COLUMN_COUNT, ev);
+            if (healthFastRegenAlert())
+                reportEvent("Health: 3 regens in a row under 100 mi apart -- oil dilution or a stuck EGR/DPF sensor is worth checking");
+            if (healthOilReminderAlert())
+                reportEvent("Health: 15 regens since the last oil-change reference -- check the dipstick (send 'O' once it's done)");
+            if (healthSlowWarmupAlert())
+                reportEvent("Health: warm-up to 80C took well over the usual time -- possible stuck-open thermostat");
         }
 #endif
 

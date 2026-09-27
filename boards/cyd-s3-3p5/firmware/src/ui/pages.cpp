@@ -134,6 +134,32 @@ static void drawTrip(const PagesData &d) {
     }
 }
 
+static void drawHealth(const UiState &ui, const PagesData &d) {
+    title("HEALTH");
+    char b[40];
+    const int L0 = M, L1 = W / 2 - 8, R0 = W / 2 + 8, R1 = W - M;
+    int y = 50;
+    if (d.healthRegensToday < 0) rowAt(L0, L1, y, "Regens today", "-");
+    else { snprintf(b, sizeof b, "%d", d.healthRegensToday); rowAt(L0, L1, y, "Regens today", b); }
+    y += 34;
+    if (d.healthRegensThisWeek < 0) rowAt(L0, L1, y, "This week", "-");
+    else { snprintf(b, sizeof b, "%d", d.healthRegensThisWeek); rowAt(L0, L1, y, "This week", b); }
+    y += 34;
+    fmtf(b, sizeof b, ui.sinceRegen, 1, " mi"); rowAt(L0, L1, y, "Since last", b); y += 34;
+    fmtf(b, sizeof b, d.healthAvgRegenIntervalMi, 0, " mi avg"); rowAt(L0, L1, y, "Avg interval", b); y += 34;
+    snprintf(b, sizeof b, "%u", d.healthRegensSinceOil); rowAt(L0, L1, y, "Since oil", b);
+
+    s_cv->drawFastVLine(W / 2, 50, H - 50 - 30, C_DIM());
+    y = 50;
+    if (d.healthOilChangeOdometerMi <= 0.0f) rowAt(R0, R1, y, "Oil set at", "not set");
+    else { fmtf(b, sizeof b, d.healthOilChangeOdometerMi, 0, " mi"); rowAt(R0, R1, y, "Oil set at", b); }
+    y += 34;
+    fmtf(b, sizeof b, d.healthLastWarmupMin, 1, " min"); rowAt(R0, R1, y, "Warm-up", b); y += 34;
+    fmtf(b, sizeof b, d.healthWarmupMedianMin, 1, " min"); rowAt(R0, R1, y, "Median", b); y += 34;
+    fmtf(b, sizeof b, d.batteryV, 2, " V");
+    rowAt(R0, R1, y, "Voltage", b, (!isnan(d.batteryV) && d.batteryV < 12.2f) ? C_AMB() : C_FG);
+}
+
 static void drawSystem(const PagesData &d) {
     title("SYSTEM");
     char b[40];
@@ -195,6 +221,7 @@ void pagesRender(const UiState &ui, const PagesData &d) {
         switch (s_page) {
             case PAGE_TREND: drawTrend(d); break;
             case PAGE_TRIP: drawTrip(d); break;
+            case PAGE_HEALTH: drawHealth(ui, d); break;
             default: drawSystem(d); break;
         }
     }
