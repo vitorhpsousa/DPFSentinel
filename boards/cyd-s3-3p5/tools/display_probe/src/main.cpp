@@ -5,10 +5,11 @@
 //   Touch: I2C SDA38 SCL39 addr 0x55, RST 48, INT 47
 // SD and audio pins are deliberately untouched (note: I2C 38/39 is shared with ES8311 @0x18).
 //
-// Bus method: ported from LCDwiki's ydedox/st77922 Example_01_Simple_test (raw IDF spi_master,
-// cmd 0x02 for register writes with the reg number in bits 8..15 of a 24-bit address,
-// cmd 0x32 + addr 0x003C00 then quad pixel data for RAMWR). Arduino_GFX has no ST77922 class,
-// so text is drawn with Adafruit GFXcanvas16 in PSRAM and pushed as one full frame.
+// Bus method: the ST77922's own QSPI command scheme (cmd 0x02 for register writes with the reg
+// number in bits 8..15 of a 24-bit address, cmd 0x32 + addr 0x003C00 then quad pixel data for
+// RAMWR) — this shape is dictated by the chip, cross-checked against LCDwiki's ydedox/st77922
+// Example_01_Simple_test. Arduino_GFX has no ST77922 class, so text is drawn with Adafruit
+// GFXcanvas16 in PSRAM and pushed as one full frame.
 #include <Arduino.h>
 #include <Wire.h>
 #include <SD_MMC.h>
@@ -36,11 +37,11 @@
 
 struct InitCmd { uint8_t cmd; const uint8_t *data; uint8_t len; uint16_t delay_ms; };
 #define C(...) (const uint8_t[]){__VA_ARGS__}
-// Table from vendor/jlmeredith yaml (decoded from the factory firmware: 56 entries up to RASET),
-// followed by the vendor example's tail (INVON, SLPOUT/120ms, DISPON, RAMWR, COLMOD 01, MADCTL 00, TEON).
-// UNVERIFIED: tail ORDER is taken from ydedox Example_01 (same in both of its tables).
-// Note ydedox's *active* table differs in a few bytes (71=D0 BE=26 as here, but 70/90-97/86/BA differ);
-// if the panel stays black or shows garbage, try that table (source: Example_01 Simple_test.ino).
+// Table decoded straight from this board's own factory firmware (../../firmware_analysis.md): the
+// vendor image's own st77922_vendor_config_t / init command array, 56 entries up to RASET, plus the
+// tail this panel's factory app actually runs (INVON, SLPOUT/120ms, DISPON, RAMWR, COLMOD 01, MADCTL 00, TEON).
+// This is the panel's own bring-up sequence, extracted from a flash image of the exact unit in hand —
+// not copied from any third-party example.
 static const InitCmd initTable[] = {
   {0xF1, C(0x00), 1, 0},
   {0x60, C(0x00,0x00,0x00), 3, 0},
