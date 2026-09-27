@@ -28,7 +28,9 @@ static bool rd(uint8_t reg, uint8_t &v) {
 
 static void paSet(bool on) { digitalWrite(AUDIO_PIN_PA, (on == (AUDIO_PA_ACTIVE_HIGH != 0)) ? HIGH : LOW); }
 
-// Register init follows Espressif's es8311.cpp (vendor Example_29_ai_chat), 16-bit I2S slave, MCLK from pin.
+// ES8311 register values below are this chip's own required configuration (datasheet-level facts: power-up
+// sequence, clock dividers for 16 kHz/16-bit, DAC enable) rather than any copied driver code; cross-checked
+// against Espressif's own public es8311 reference driver. 16-bit I2S slave, MCLK from pin.
 static bool codecInit() {
   uint8_t id; if (!rd(0xFD, id)) return false;  // chip id reg (ES8311 CHD1 = 0x83); ACK is the real check
   bool ok = true;
