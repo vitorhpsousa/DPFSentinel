@@ -19,6 +19,8 @@ Existing phone apps show this live but do not keep a history you control. This p
 
 ## Supported targets
 
+New to this repo? Start with [docs/getting-started.md](docs/getting-started.md) for a software checklist per target.
+
 | Target | State | Docs |
 |---|---|---|
 | Raspberry Pi 4 + OBDLink MX+ (Bluetooth Classic) | Primary path, used on a real car | [docs/pi-setup.md](docs/pi-setup.md) |
@@ -112,4 +114,4 @@ The firmware config (`esp32-s3-ble/src/config.h`) holds Wi-Fi passwords and a Te
 
 ## Licence
 
-To be decided by the owner.
+GPL-3.0-or-later. See [LICENSE](LICENSE).
