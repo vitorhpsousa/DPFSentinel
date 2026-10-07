@@ -1,6 +1,6 @@
 # Architecture
 
-Everything below was checked against the code in `pi/` and `esp32-s3-ble/`. Where an older note disagreed with the code, the code is described.
+Everything below was checked against the code in the `obd-pi` and `obd-esp32` repos. Where an older note disagreed with the code, the code is described.
 
 ## Data flow
 
@@ -9,7 +9,7 @@ Car (ECM 7E0, steering ECU 7D4, CAN 11-bit 500 kbit/s)
    |  OBD-II
 OBD adapter  (Pi: OBDLink MX+, Bluetooth Classic   |  S3: BLE ELM327)
    |  ASCII text, commands end with \r, replies end with ">"
-Logger  (pi/main.py  |  esp32-s3-ble/src/main.cpp)
+Logger  (main.py  |  src/main.cpp)
    |  1. select CAN header (ATSH)  2. send request + frame-count digit
    |  3. reassemble ISO-TP frames  4. check payload prefix  5. decode
    +--> session_N.csv   one row per second, decoded values
@@ -20,15 +20,15 @@ Logger  (pi/main.py  |  esp32-s3-ble/src/main.cpp)
 
 Steps in detail:
 
-1. Requests and AT commands are ASCII, terminated by `\r`. The adapter replies and finishes with `>` (`pi/obd/elm_client.py: send_command`).
+1. Requests and AT commands are ASCII, terminated by `\r`. The adapter replies and finishes with `>` (`obd/elm_client.py: send_command`).
 2. Headers are on (`ATH1`), so every CAN frame comes back as hex prefixed with its 3-character id, for example `7E8034104A2` (spaces off, `ATS0`).
-3. `pi/obd/isotp.py` keeps only frames whose id equals the expected reply id and reassembles single frames (PCI 0) and first + consecutive frames (PCI 1 / 2) into a payload starting at the service byte (`0x41` for mode 01, `0x61` for mode 21). It returns `None` if the id is wrong or fewer than the announced bytes arrived. It does not check consecutive-frame sequence numbers.
+3. `obd/isotp.py` keeps only frames whose id equals the expected reply id and reassembles single frames (PCI 0) and first + consecutive frames (PCI 1 / 2) into a payload starting at the service byte (`0x41` for mode 01, `0x61` for mode 21). It returns `None` if the id is wrong or fewer than the announced bytes arrived. It does not check consecutive-frame sequence numbers.
 4. A payload is accepted only if it starts with the PID's `prefix`; otherwise the cell is empty.
 5. Each decoder reads fixed byte offsets and applies a scale. Requests shared by several columns (everything in the `2103` reply) go out once per cycle.
 
 Adapter init (`ElmClient.init_adapter`): `ATZ`, then `ATE0`, `ATL0`, `ATH1`, `ATS0`, `ATSP6`, `ATST96`. `ATSP6` fixes the protocol to ISO 15765-4 CAN 11-bit/500k (the code comment says auto-search took 8 to 10 s and made every request time out). `ATST96` is a 600 ms reply timeout (0x96 x 4 ms). The S3 firmware uses `ATST32` (200 ms) instead. Each init command must return non-empty text or init is reported as failed.
 
-CAN transmit headers and reply ids (`RX_ID` in `pi/obd/pid_registry.py`):
+CAN transmit headers and reply ids (`RX_ID` in `obd/pid_registry.py`):
 
 | Request header | Target | Reply id |
 |---|---|---|
@@ -36,14 +36,14 @@ CAN transmit headers and reply ids (`RX_ID` in `pi/obd/pid_registry.py`):
 | `7E0` | engine ECU, mode 21 | `7E8` |
 | `7D4` | steering (EPS) ECU | `7DC` |
 
-## Pi logger (`pi/main.py`)
+## Pi logger (`main.py`)
 
 - One pass over `PID_TABLE` per cycle, then a sleep of `POLL_INTERVAL_S` (1.0 s). The pass itself takes extra time, so rows are slightly slower than 1 Hz.
 - Every failure (dropped link, failed reconnect, write timeout) is caught inside the loop. One blank row is written per attempt, the adapter is closed and reopened every 5 s (`RECONNECT_DELAY_S`). The process deliberately does not exit, because systemd restarting it produced hundreds of near-empty session files (comment in `main.py`).
 - After `BLANK_STREAK_LIMIT = 10` consecutive cycles with no decoded value, it raises internally, which re-runs adapter init.
 - Raw replies are always written while data flows. While nothing decodes, only the first blank cycle and every 60th after it are kept.
 - `CALIBRATION_MODE = True` replaces normal polling with a raw dump of four requests to `calibration.csv` (`CALIBRATION_REQUESTS`).
-- The idle-blockage heuristic (`pi/dpf/dpf_monitor.py`) is `rpm <= 1100 and pressure >= 20 hPa` (`DPF_IDLE_RPM_CEILING`, `DPF_IDLE_PRESSURE_THRESHOLD_HPA`). It does **not** check that the engine is warm. It prints a console line and the dashboard uses the same rule to flag a tile and mark a session summary. The thresholds are unverified.
+- The idle-blockage heuristic (`dpf/dpf_monitor.py`) is `rpm <= 1100 and pressure >= 20 hPa` (`DPF_IDLE_RPM_CEILING`, `DPF_IDLE_PRESSURE_THRESHOLD_HPA`). It does **not** check that the engine is warm. It prints a console line and the dashboard uses the same rule to flag a tile and mark a session summary. The thresholds are unverified.
 - `dpf_odo_at_last_regen_mi` is derived (`odometer_mi - dpf_dist_since_regen_mi`), not requested.
 
 ## Files
@@ -54,7 +54,7 @@ Numbering: on the Pi `N` is the first unused `session_N.csv` in `LOG_DIR`. On th
 
 Empty cell = no valid value. Numbers are written with 3 decimals. The header row names every column.
 
-Pi (`pi/storage/session_store.py`, `pi/obd/pid_registry.py`), 21 columns:
+Pi (`storage/session_store.py`, `obd/pid_registry.py`), 21 columns:
 
 ```
 unix_time, engine_rpm, coolant_temp, vehicle_speed, maf_flow, engine_load_pct,
@@ -66,7 +66,7 @@ eps_voltage_v, dpf_odo_at_last_regen_mi
 
 `unix_time` is `time.time()` at write time, so it is only as good as the Pi's clock (see [pi-setup.md](pi-setup.md#clock)). Each row is `fsync`ed because a short cold trip can end in a power cut.
 
-ESP32-S3 (`esp32-s3-ble/src/logging/session_store.cpp`, `obd/pid_registry.h`), 28 columns:
+ESP32-S3 (`src/logging/session_store.cpp`, `obd/pid_registry.h`), 28 columns:
 
 ```
 millis, unix_time, engine_rpm, vehicle_speed, engine_load_pct, maf_flow,
@@ -109,7 +109,7 @@ Neither device has a real-time clock. The Pi uses its system clock, which is unr
 
 ## Services (Pi)
 
-Units live in `pi/scripts/` and assume user `ix35` and the project at `/home/ix35/obd-logger`; edit them for your system.
+Units live in `scripts/` and assume user `ix35` and the project at `/home/ix35/obd-logger`; edit them for your system.
 
 | Unit | Runs | User | Notes |
 |---|---|---|---|
@@ -117,7 +117,7 @@ Units live in `pi/scripts/` and assume user `ix35` and the project at `/home/ix3
 | `obd-dashboard.service` | `webui/server.py` | `ix35` | read-only against `LOG_DIR`, listens on `0.0.0.0:8080`, no authentication |
 | `soot-panel.service` | `screen/soot_panel.py` | root | writes `/dev/fb0`; starts after `obd-dashboard.service` |
 
-### Dashboard API (`pi/webui/server.py`)
+### Dashboard API (`webui/server.py`)
 
 | Path | Returns |
 |---|---|
@@ -129,7 +129,7 @@ Units live in `pi/scripts/` and assume user `ix35` and the project at `/home/ix3
 
 The server only reads CSVs; if it stops, logging is unaffected. It parses whole files on each request, which is fine for hobby volumes only.
 
-### Soot panel (`pi/screen/soot_panel.py`)
+### Soot panel (`screen/soot_panel.py`)
 
 Polls `http://localhost:8080/api/live` every second, renders 480x320 with Pillow and writes RGB565 to `/dev/fb0`, only when the frame bytes change.
 
@@ -139,7 +139,7 @@ Polls `http://localhost:8080/api/live` every second, renders 480x320 with Pillow
 | `dpf_regen_active` set | near-black background, "ACTIVE REGENERATION / DO NOT SWITCH OFF / UNTIL IT FINISHES", soot, EGT before the DPF |
 | otherwise | 2-column grid (soot, RPM, speed, coolant, diff pressure, catalyst temp, intercooler, MAF, since regen, regen state, odometer) |
 
-Background colour: green below 14 g, amber 14 to 17 g, then a linear blend from amber to dark red (`#8b0000`) reaching full dark red at 28 g. These constants (`SOOT_GREEN_MAX`, `SOOT_AMBER_MAX`, `SOOT_DANGER_MAX`) are the owner's choices, not a specification. `python3 screen/soot_panel.py --demo` cycles fixed states every 30 s. The panel needs `requests` and `Pillow`, which are **not** in `pi/requirements.txt`, and the DejaVu fonts (`fonts-dejavu-core`).
+Background colour: green below 14 g, amber 14 to 17 g, then a linear blend from amber to dark red (`#8b0000`) reaching full dark red at 28 g. These constants (`SOOT_GREEN_MAX`, `SOOT_AMBER_MAX`, `SOOT_DANGER_MAX`) are the owner's choices, not a specification. `python3 screen/soot_panel.py --demo` cycles fixed states every 30 s. The panel needs `requests` and `Pillow`, which are **not** in `requirements.txt`, and the DejaVu fonts (`fonts-dejavu-core`).
 
 ## ESP32-S3
 

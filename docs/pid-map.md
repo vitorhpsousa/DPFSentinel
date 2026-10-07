@@ -1,6 +1,6 @@
 # PID map (2014 Hyundai ix35 1.7 CRDi, D4FD)
 
-This is the map from request to CSV column for one car. It will not give meaningful DPF data on any other vehicle. Every row below was read from the code, and the source is cited (`pi/obd/pid_registry.py` is abbreviated `pi:`, `esp32-s3-ble/src/obd/pid_registry.h` as `s3:`, `esp32-s3-ble/src/obd/pid_decode.cpp` as `s3dec:`).
+This is the map from request to CSV column for one car. It will not give meaningful DPF data on any other vehicle. Every row below was read from the code, and the source is cited (`obd/pid_registry.py` in the `obd-pi` repo is abbreviated `pi:`, `src/obd/pid_registry.h` in the `obd-esp32` repo as `s3:`, `src/obd/pid_decode.cpp` as `s3dec:`).
 
 ## How to read the table
 
@@ -54,7 +54,7 @@ Every decoder takes the payload starting at the service byte. If the payload is 
 
 ## How it was derived
 
-Every decoder was reverse-engineered from a Car Scanner session on this exact car (2026-09-13): Car Scanner's raw ELM327 log (`log.txt`, headers on, echo on) aligned sample for sample with its own decoded CSV export (docstring of `pi/obd/pid_registry.py`).
+Every decoder was reverse-engineered from a Car Scanner session on this exact car (2026-09-13): Car Scanner's raw ELM327 log (`log.txt`, headers on, echo on) aligned sample for sample with its own decoded CSV export (docstring of `obd/pid_registry.py`).
 
 1. `tools/carscanner_parse.py` splits the raw log on `>` prompts, matches each echoed request to a name in a hard-coded `REQS` table, and reassembles the ISO-TP payloads (accepting reply ids `7E8` and `7DC`).
 2. `tools/carscanner_solve.py` aligns the two series using RPM (a standard formula, u16 x 0.25): it searches the sample offset at which the log-derived RPM and the CSV's `Engine RPM (rpm)` column agree within 1 rpm. It then tries every byte offset and width (u8, i8, u16, i16, u24, u32) of every request, at sample shifts of -2 to +2, keeps candidates with correlation above 0.995, and fits `value = a*x + b`. Columns with fewer than 1000 samples or zero variance are skipped.
@@ -74,7 +74,7 @@ The two flags are threshold tests on single bytes, not linear fits. Their commen
 ## Known documentation drift
 
 - `s3:` header comment names probes `010B`, `0133`, `012F`, `0123`; the table has `22280B`, `0133`, `22E001`, `0123`. Trust the table.
-- `esp32-s3-ble/src/config.h` says rows are stamped with milliseconds only and have no wall clock; the code writes both `millis` and `unix_time` (from NTP or the phone). Trust the code.
+- `src/config.h` (`obd-esp32` repo) says rows are stamped with milliseconds only and have no wall clock; the code writes both `millis` and `unix_time` (from NTP or the phone). Trust the code.
 
 ## Adding a PID
 

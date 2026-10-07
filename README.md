@@ -19,7 +19,9 @@ Existing phone apps show this live but do not keep a history you control. This p
 
 ## Supported targets
 
-New to this repo? Start with [docs/getting-started.md](docs/getting-started.md) for a software checklist per target.
+**New to all this and not a programmer?** [docs/easy-setup/](docs/easy-setup/README.md) is a point-and-click guide to building the main in-car board (CYD 3.5") with no command-line or developer experience assumed, with or without an AI assistant walking you through it.
+
+Already comfortable with a terminal, or setting up a different target? Start with [docs/getting-started.md](docs/getting-started.md) for a software checklist per target.
 
 | Target | State | Docs |
 |---|---|---|
@@ -75,15 +77,15 @@ Full detail in [docs/pi-setup.md](docs/pi-setup.md). In short:
 git clone <repo-url> obd-logger && cd obd-logger
 sudo apt install bluez python3-venv
 python3 -m venv venv
-venv/bin/pip install -r pi/requirements.txt      # pyserial
+venv/bin/pip install -r requirements.txt          # pyserial
 
 # 1. Pair and trust the adapter once with bluetoothctl (see pi-setup.md)
-# 2. Put your adapter's address into pi/scripts/bind_rfcomm.sh (variable MAC)
-# 3. Adjust LOG_DIR in pi/config.py
-sudo pi/scripts/bind_rfcomm.sh                    # creates /dev/rfcomm0
-cd pi && ../venv/bin/python3 main.py              # ignition on
+# 2. Put your adapter's address into scripts/bind_rfcomm.sh (variable MAC)
+# 3. Adjust LOG_DIR in config.py
+sudo scripts/bind_rfcomm.sh                       # creates /dev/rfcomm0
+venv/bin/python3 main.py                          # ignition on
 # second terminal:
-../venv/bin/python3 webui/server.py               # http://<pi-ip>:8080/
+venv/bin/python3 webui/server.py                  # http://<pi-ip>:8080/
 ```
 
 A new `session_N.csv` and `raw_N.log` appear in `LOG_DIR`. With the engine off some requests will legitimately return no data and cells stay empty.
@@ -92,8 +94,8 @@ A new `session_N.csv` and `raw_N.log` appear in `LOG_DIR`. With the engine off s
 
 | Path | Contents |
 |---|---|
-| `pi/` | Raspberry Pi logger, dashboard, screen panel, systemd units |
-| `esp32-s3-ble/` | ESP32-S3 BLE firmware (PlatformIO) |
+| (repo root) | Raspberry Pi logger, dashboard, screen panel, systemd units |
+| (repo root) | ESP32-S3 BLE firmware (PlatformIO) |
 | `esp32/` | Earlier plain-ESP32 firmware, state unknown, undocumented |
 | `tools/` | Car Scanner log parser/solver, clock backfill, log helper |
 | `astra/` | Research and untested discovery tooling for a second car |
@@ -107,10 +109,11 @@ A new `session_N.csv` and `raw_N.log` appear in `LOG_DIR`. With the engine off s
 - [ESP32-S3](docs/esp32-s3.md), [Telegram alerts](docs/telegram-alerts.md), [ESP32-C3/C6](docs/esp32-c3-c6.md)
 - [Contributing](docs/contributing.md)
 - [Disclaimer](docs/disclaimer.md)
+- [Manual setup](docs/manual-setup.md): do the whole setup yourself, without an AI agent touching your hardware
 
 ## Secrets
 
-The firmware config (`esp32-s3-ble/src/config.h`) holds Wi-Fi passwords and a Telegram token, and the adapter's Bluetooth address appears in `pi/config.py` and `pi/scripts/bind_rfcomm.sh`. Use your own values and never commit them.
+The firmware config (`src/config.h`) holds Wi-Fi passwords and a Telegram token, and the adapter's Bluetooth address appears in `config.py` and `scripts/bind_rfcomm.sh`. Use your own values and never commit them.
 
 ## Licence
 

@@ -14,7 +14,7 @@
 
 | Generic (reusable) | Car-specific (this is what you replace) |
 |---|---|
-| ELM327 client, BLE and rfcomm transports (`pi/obd/elm_client.py`, `ble_transport.py`), ISO-TP reassembly (`pi/obd/isotp.py`), session storage (CSV plus raw log), web dashboard plumbing, Telegram transport | PID table and decoders (`pi/obd/pid_registry.py`, `esp32-s3-ble/src/obd/pid_registry.h`, `pid_decode.cpp`), protocol set with `ATSP6`, reply ids (`RX_ID` / `rxIdFor()`), derived columns, regen-flag logic, thresholds, dashboard tile names |
+| ELM327 client, BLE and rfcomm transports (`obd/elm_client.py`, `ble_transport.py`), ISO-TP reassembly (`obd/isotp.py`), session storage (CSV plus raw log), web dashboard plumbing, Telegram transport | PID table and decoders (`obd/pid_registry.py` in `obd-pi`, `src/obd/pid_registry.h`, `pid_decode.cpp` in `obd-esp32`), protocol set with `ATSP6`, reply ids (`RX_ID` / `rxIdFor()`), derived columns, regen-flag logic, thresholds, dashboard tile names |
 
 `astra/design/reuse_plan.md` lists the ix35-specific spots in more detail and proposes a profile-driven refactor (not implemented). See also [pid-profile-format.md](pid-profile-format.md).
 
@@ -88,14 +88,14 @@ Limits: this only finds linear numeric fits. Flags (regen active) and enumeratio
 
 **(proposed)** A generic replay tool that takes the profile file (below) and a raw log and prints decoded values, so you can validate without a CSV. Not written.
 
-For a **quick look at raw replies** without a reference: set `CALIBRATION_MODE = True` in `pi/config.py`; `main.py` then dumps every raw byte of each request in `CALIBRATION_REQUESTS` (in `pid_registry.py`) to `calibration.csv` for matching by timestamp against a phone screen. Put it back to `False` afterwards.
+For a **quick look at raw replies** without a reference: set `CALIBRATION_MODE = True` in `config.py`; `main.py` then dumps every raw byte of each request in `CALIBRATION_REQUESTS` (in `pid_registry.py`) to `calibration.csv` for matching by timestamp against a phone screen. Put it back to `False` afterwards.
 
 ### Step 5: Add the decoders
 
 For each confirmed value:
 
-- `pi/obd/pid_registry.py`: a `dec_*` function and a `PidDef(name, unit, header, request_hex, frames, prefix, decode)` row. Offsets count from the service byte.
-- ESP32: `esp32-s3-ble/src/obd/pid_registry.h` and `pid_decode.cpp`.
+- `obd/pid_registry.py`: a `dec_*` function and a `PidDef(name, unit, header, request_hex, frames, prefix, decode)` row. Offsets count from the service byte.
+- ESP32 (`obd-esp32` repo): `src/obd/pid_registry.h` and `pid_decode.cpp`.
 - If replies come from a new id, extend `RX_ID` (Pi) or `rxIdFor()` (ESP32).
 - Change `ATSP6` if your car uses another protocol (`elm_client.py`, `elm_client.cpp`).
 

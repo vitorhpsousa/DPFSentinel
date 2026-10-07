@@ -3,14 +3,14 @@
 ## Status: planned, not implemented
 
 There is **no C3 or C6 code and no PlatformIO environment** in this repo.
-The only firmware environments are `esp32-s3-ble/platformio.ini`
+The only firmware environments are `platformio.ini`
 (`esp32-s3-devkitc-1`); `esp32/` and `astra/discovery/` are other S3-era
 projects. Everything below is a plan plus reasoning. Nothing here has been run.
 
 | Item | Status |
 |---|---|
-| ESP32-S3 firmware (`esp32-s3-ble/`) | Works (tested on the author's car) |
-| Raspberry Pi 4 app (`pi/`) | Works (tested) |
+| ESP32-S3 firmware (`obd-esp32` repo root) | Works (tested on the author's car) |
+| Raspberry Pi 4 app (`obd-pi` repo root) | Works (tested) |
 | ESP32-C3 firmware / PlatformIO env | **Not implemented** |
 | ESP32-C6 firmware / PlatformIO env | **Not implemented** |
 | Round-screen UI (LVGL) | **Not implemented** |
@@ -41,7 +41,7 @@ Pins from the reference page, **not confirmed on the physical board**:
 
 Verify pins with the board manual or a multimeter before wiring. Do not guess.
 
-## What changes when porting `esp32-s3-ble`
+## What changes when porting the ESP32-S3 (BLE) firmware
 
 Known differences (datasheet-level facts, plus marked reasoning):
 
@@ -56,9 +56,9 @@ Known differences (datasheet-level facts, plus marked reasoning):
   the notes list this as the main open risk. Budget by measuring free heap.
 - **BLE only.** ESP32-C3 (and C6) have no Bluetooth Classic. Only BLE ELM327
   adapters work (the same restriction as the S3, see the header of
-  `esp32-s3-ble/src/config.h`). The OBDLink MX+ used with the Pi is Classic
+  `src/config.h`). The OBDLink MX+ used with the Pi is Classic
   Bluetooth and will **not** work on these boards.
-- **BLE library.** `esp32-s3-ble` uses `h2zero/NimBLE-Arduino@^1.4.3`; this
+- **BLE library.** The ESP32-S3 firmware uses `h2zero/NimBLE-Arduino@^1.4.3`; this
   should also support C3 (check the library's supported-chip list for the version you pin;
   the C6 needs a newer library and Arduino core than the platform used here, reasoning).
 - **Storage, LittleFS/SD.** `USE_SD` with `SD_USE_SDMMC 1` uses the S3 board's SDMMC
@@ -82,7 +82,7 @@ commonly used. Adds Wi-Fi 6 (802.11ax, 2.4 GHz) and an IEEE 802.15.4 radio
 
 1. Confirm the real board pinout (display, button, free GPIOs) with the manual or a
    multimeter.
-2. Add a PlatformIO env for your board; copy `esp32-s3-ble/` and drop
+2. Add a PlatformIO env for your board; copy this repo (`platformio.ini`, `src/`) and drop
    `src/web/` and the AP code (or keep the web UI if RAM allows).
 3. Set BLE adapter fields (`BLE_TARGET_ADDRESS`, `BLE_NAME_HINT`) using
    `BLE_SCAN_ONLY` / `BLE_DUMP_SERVICES` on the new chip. Verify.

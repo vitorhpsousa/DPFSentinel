@@ -6,6 +6,11 @@ and an ordered checklist to get each target building and flashed. It does not
 repeat the deep-dive docs — follow the links for wiring, pin maps, protocol
 detail and known issues.
 
+**Never used a terminal or PlatformIO before?** This page assumes you're
+comfortable with a command line. If you're not, [easy-setup/](easy-setup/README.md)
+covers the same first flash (CYD 3.5" board) entirely by clicking buttons in
+VS Code, with no terminal required, and offers an AI-assisted walkthrough too.
+
 ## Software prerequisites (all targets)
 
 - **PlatformIO** — either the `pio` CLI (PlatformIO Core) or VS Code with the

@@ -6,7 +6,7 @@ Labels: **[exists]** is in this repository today; **[proposed]** is a design ide
 
 | Output | Where | Status |
 |---|---|---|
-| `session_N.csv`: one row per poll (about 1 Hz), header row lists columns, columns named like `engine_rpm`, `dpf_soot_level_g`, `dpf_diff_pressure_hpa`, with `unix_time` when the clock is known | Pi: `LOG_DIR` (`pi/config.py`); ESP32: SD card (`/obd`) | **[exists]** |
+| `session_N.csv`: one row per poll (about 1 Hz), header row lists columns, columns named like `engine_rpm`, `dpf_soot_level_g`, `dpf_diff_pressure_hpa`, with `unix_time` when the clock is known | Pi: `LOG_DIR` (`config.py`); ESP32: SD card (`/obd`) | **[exists]** |
 | `raw_N.log`: tab-separated raw adapter traffic (time, header, request, reply) | Pi: next to the CSV | **[exists]** |
 | Web dashboard and JSON: `/`, `/api/live`, `/api/sessions`, `/api/sessions/<name>`, `/api/schema` (Pi, port `DASHBOARD_PORT`, default 8080, no authentication, HTTP) | Pi | **[exists]**; `/api/schema` currently raises (see contributing.md known issues) |
 | ESP32 web UI: `/api/live`, `/api/files`, `/api/time`, `/api/send`, `/api/report`, `/api/testalert`, `/api/statusnow` | ESP32 | **[exists]** (endpoint shapes not re-documented here) |
@@ -51,7 +51,7 @@ Security note: the dashboard has no login and speaks plain HTTP. Do not expose i
           value_template: "{{ value_json.latest.dpf_soot_level_g if value_json.has_data else none }}"
           unit_of_measurement: "g"
   ```
-- **MQTT [proposed]**: a small publisher (in `pi/`, using `paho-mqtt`) sending each new row to topics such as `obd/<vehicle>/dpf_soot_level_g` with retained state, plus Home Assistant MQTT discovery messages. The car is only reachable when it is on the home network, so retain the last value and publish an availability topic (`online`/`offline`). Also consider the alerts: regen start/finish is already detected in `pi/alerts/regen_watch.py` and could publish events instead of, or as well as, Telegram.
+- **MQTT [proposed]**: a small publisher (in the `obd-pi` repo, using `paho-mqtt`) sending each new row to topics such as `obd/<vehicle>/dpf_soot_level_g` with retained state, plus Home Assistant MQTT discovery messages. The car is only reachable when it is on the home network, so retain the last value and publish an availability topic (`online`/`offline`). Also consider the alerts: regen start/finish is already detected in `alerts/regen_watch.py` and could publish events instead of, or as well as, Telegram.
 - **ESP32**: could publish to MQTT directly over Wi-Fi in the same way. Needs a library (for example PubSubClient or AsyncMqttClient) and RAM budget check on the S3. **[proposed]**.
 - **Telegram** remains the existing alert path **[exists]**.
 

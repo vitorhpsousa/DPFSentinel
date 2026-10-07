@@ -1,6 +1,6 @@
 # ESP32-S3 (BLE) logger
 
-An alternative to the Pi: an ESP32-S3 talks to a BLE ELM327 adapter, logs to microSD, serves a small web UI and can send Telegram messages. Same PID set and decoders as the Pi ([pid-map.md](pid-map.md)), different transport. Everything here is taken from the code in `esp32-s3-ble/`; nothing was built or flashed while writing this page, so treat the build steps as untested by this draft. Telegram details are in [telegram-alerts.md](telegram-alerts.md). A future C3/C6 port is described in [esp32-c3-c6.md](esp32-c3-c6.md).
+An alternative to the Pi: an ESP32-S3 talks to a BLE ELM327 adapter, logs to microSD, serves a small web UI and can send Telegram messages. Same PID set and decoders as the Pi ([pid-map.md](pid-map.md)), different transport. Everything here is taken from the code in this repo's root; nothing was built or flashed while writing this page, so treat the build steps as untested by this draft. Telegram details are in [telegram-alerts.md](telegram-alerts.md). A future C3/C6 port is described in [esp32-c3-c6.md](esp32-c3-c6.md).
 
 ## Hardware
 
@@ -13,10 +13,9 @@ Built-in SD slot pins (`SD_USE_SDMMC 1`, 1-bit mode): CLK 39, CMD 38, D0 40. Alt
 
 ## Build and flash
 
-The toolchain is PlatformIO (`esp32-s3-ble/platformio.ini`: platform `espressif32`, Arduino framework, LittleFS, monitor 115200, library `h2zero/NimBLE-Arduino@^1.4.3`).
+The toolchain is PlatformIO (`platformio.ini`: platform `espressif32`, Arduino framework, LittleFS, monitor 115200, library `h2zero/NimBLE-Arduino@^1.4.3`).
 
 ```bash
-cd esp32-s3-ble
 # 1. create your own src/config.h values (below)
 pio run -t upload
 pio device monitor        # opening the serial port RESETS the board and starts a new session

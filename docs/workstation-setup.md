@@ -21,7 +21,7 @@ Things the same on every OS:
 
 - The board's USB port appears as a serial port: `COM<n>` on Windows, `/dev/ttyACM*` on Linux, `/dev/cu*` on macOS, when the S3's built-in USB Serial/JTAG is used (Espressif). Boards with a separate USB-to-serial chip may show up under different names.
 - The S3 can normally be put into download mode by the flasher automatically. If the board is unresponsive, hold GPIO0 low (the BOOT button on most boards, **unverified** for your board) and reset it (Espressif).
-- The flash and monitor commands are the same everywhere: from `esp32-s3-ble/`, `pio run -t upload` and `pio device monitor` (from [esp32-s3.md](esp32-s3.md); I did not find them in the PlatformIO pages I fetched, so they are **unverified** here). Opening the monitor resets the board and starts a new logging session.
+- The flash and monitor commands are the same everywhere: from the `obd-esp32` repo root, `pio run -t upload` and `pio device monitor` (from [esp32-s3.md](esp32-s3.md); I did not find them in the PlatformIO pages I fetched, so they are **unverified** here). Opening the monitor resets the board and starts a new logging session.
 
 ## Windows
 
@@ -45,12 +45,11 @@ The S3's native USB appears as a `COM` port in Device Manager and uses standard 
 ### W3. Flash the S3
 
 ```powershell
-cd esp32-s3-ble
 pio run -t upload
 pio device monitor
 ```
 
-(**unverified** on Windows; commands as in the project docs). If the port is not found, check Device Manager for the COM number and try a different cable (many cables are power-only, **unverified** general advice).
+(**unverified** on Windows; commands as in the project docs; run from the `obd-esp32` repo root). If the port is not found, check Device Manager for the COM number and try a different cable (many cables are power-only, **unverified** general advice).
 
 ### W4. Image the Pi
 
@@ -128,12 +127,11 @@ Log out and back in (or reboot), then run `id` to confirm the group is listed. D
 ### L3. Flash the S3
 
 ```bash
-cd esp32-s3-ble
 pio run -t upload
 pio device monitor
 ```
 
-(**unverified** on Linux). The port is usually `/dev/ttyACM0` for the native USB (Espressif names `/dev/ttyACM*`). Some desktop services such as ModemManager or brltty are known to grab serial devices; that is common community advice, not from a source I read (**unverified**).
+(**unverified** on Linux; run from the `obd-esp32` repo root). The port is usually `/dev/ttyACM0` for the native USB (Espressif names `/dev/ttyACM*`). Some desktop services such as ModemManager or brltty are known to grab serial devices; that is common community advice, not from a source I read (**unverified**).
 
 ### L4. Image the Pi
 
@@ -173,12 +171,11 @@ The S3's native USB shows up as `/dev/cu*` (Espressif). No Linux-style group ste
 ### M3. Flash the S3
 
 ```bash
-cd esp32-s3-ble
 pio run -t upload
 pio device monitor
 ```
 
-(**unverified** on macOS, though this project's author uses a Mac). If several ports exist, `pio device list` lists them (**unverified**).
+(**unverified** on macOS, though this project's author uses a Mac; run from the `obd-esp32` repo root). If several ports exist, `pio device list` lists them (**unverified**).
 
 ### M4. Image the Pi
 
