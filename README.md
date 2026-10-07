@@ -21,7 +21,7 @@ Existing phone apps show this live but do not keep a history you control. This p
 
 ## Supported targets
 
-**New to all this and not a programmer?** [docs/easy-setup/](docs/easy-setup/README.md) is a point-and-click guide to building the main in-car board (CYD 3.5") with no command-line or developer experience assumed, with or without an AI assistant walking you through it — there's also a [one-file PDF version](docs/easy-setup/pdf/DPF_Monitor_Easy_Setup_Guide.pdf) to share.
+**New to all this and not a programmer?** [docs/easy-setup/](docs/easy-setup/README.md) is a point-and-click guide to building the main in-car board (CYD 3.5") with no command-line or developer experience assumed, with or without an AI assistant walking you through it — there's also a [one-file PDF version](docs/easy-setup/pdf/DPF_Sentinel_Easy_Setup_Guide.pdf) to share.
 
 Already comfortable with a terminal? Start with [docs/getting-started.md](docs/getting-started.md) for a software checklist across all three targets below.
 
@@ -86,7 +86,7 @@ A new `session_N.csv` and `raw_N.log` appear each session. With the engine off s
 ## Documentation
 
 **Getting started**
-- [Easy setup](docs/easy-setup/README.md): no-code, point-and-click guide to the CYD 3.5" board, with an AI-assisted option — also available as a [PDF](docs/easy-setup/pdf/DPF_Monitor_Easy_Setup_Guide.pdf)
+- [Easy setup](docs/easy-setup/README.md): no-code, point-and-click guide to the CYD 3.5" board, with an AI-assisted option — also available as a [PDF](docs/easy-setup/pdf/DPF_Sentinel_Easy_Setup_Guide.pdf)
 - [Getting started](docs/getting-started.md): software checklist across all three targets, for anyone already comfortable with PlatformIO
 - [Workstation setup](docs/workstation-setup.md): installing PlatformIO, serial drivers/permissions per OS
 - [Manual setup](docs/manual-setup.md): the whole setup yourself, without an AI agent touching your hardware
@@ -118,6 +118,12 @@ A new `session_N.csv` and `raw_N.log` appear each session. With the engine off s
 ## Secrets
 
 Each target's `src/config.h` holds WiFi passwords and a Telegram bot token. All three targets (repo root and the two boards under `boards/`) follow the same pattern: copy that target's own `src/config.example.h` to `src/config.h` and fill in your own values. `.gitignore` excludes every target's `src/config.h`, so it never gets committed. Full walkthrough: [docs/easy-setup/README.md](docs/easy-setup/README.md#setting-up-your-own-secrets-do-this-after-installing-the-software).
+
+## Support this project
+
+This is a free, hobby project — nothing here is paywalled, and it'll stay
+that way. If it's saved you some time or you just want to say thanks,
+[ko-fi.com/vitoi](https://ko-fi.com/vitoi) is there, no obligation either way.
 
 ## Licence
 

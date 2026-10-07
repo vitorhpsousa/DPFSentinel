@@ -222,3 +222,9 @@ silently ignored.
 If all of this still sounds like too much, that's completely fine — ask
 whoever gave you this link about getting a board that's already set up and
 tested, ready to just plug in.
+
+## Found this useful?
+
+This project is free and always will be. If it saved you some hassle and
+you'd like to say thanks, [ko-fi.com/vitoi](https://ko-fi.com/vitoi) — no
+pressure either way.
