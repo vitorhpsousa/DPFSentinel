@@ -2,6 +2,13 @@
 
 This is the map from request to CSV column for one car. It will not give meaningful DPF data on any other vehicle. Every row below was read from the code, and the source is cited (`obd/pid_registry.py` in the `obd-pi` repo is abbreviated `pi:`, `src/obd/pid_registry.h` in the `obd-esp32` repo as `s3:`, `src/obd/pid_decode.cpp` as `s3dec:`).
 
+> `pi:` citations point to line numbers in `obd/pid_registry.py` in the separate,
+> still-private `obd-pi` repository (see the main README). They are kept because
+> the Pi and S3 decoders were derived together from the same reference capture,
+> but a reader of this public repo cannot open that file to check them — only
+> the `s3:`/`s3dec:` citations point at files that exist in this repository.
+> Background on the Pi project generally: [cross-project-notes.md](cross-project-notes.md).
+
 ## How to read the table
 
 - **Request as sent** = request hex + the *frame-count digit*. ELM327 adapters accept one extra hex digit after a request meaning "expect this many response frames", so the adapter returns as soon as they arrive instead of waiting out the timeout. Car Scanner does the same on this car and the logger mirrors it. `B` is hex 11. Some clone adapters answer `?`; the S3 firmware then resends without the digit (`main.cpp`, `runRequest`); the Pi does not.
@@ -54,10 +61,10 @@ Every decoder takes the payload starting at the service byte. If the payload is 
 
 ## How it was derived
 
-Every decoder was reverse-engineered from a Car Scanner session on this exact car (2026-09-13): Car Scanner's raw ELM327 log (`log.txt`, headers on, echo on) aligned sample for sample with its own decoded CSV export (docstring of `obd/pid_registry.py`).
+Every decoder was reverse-engineered from a Car Scanner session on this exact car (2026-09-13): Car Scanner's raw ELM327 log (`log.txt`, headers on, echo on) aligned sample for sample with its own decoded CSV export (docstring of `obd/pid_registry.py`, `obd-pi` repo).
 
-1. `tools/carscanner_parse.py` splits the raw log on `>` prompts, matches each echoed request to a name in a hard-coded `REQS` table, and reassembles the ISO-TP payloads (accepting reply ids `7E8` and `7DC`).
-2. `tools/carscanner_solve.py` aligns the two series using RPM (a standard formula, u16 x 0.25): it searches the sample offset at which the log-derived RPM and the CSV's `Engine RPM (rpm)` column agree within 1 rpm. It then tries every byte offset and width (u8, i8, u16, i16, u24, u32) of every request, at sample shifts of -2 to +2, keeps candidates with correlation above 0.995, and fits `value = a*x + b`. Columns with fewer than 1000 samples or zero variance are skipped.
+1. [`tools/carscanner_parse.py`](../tools/carscanner_parse.py) (this repo) splits the raw log on `>` prompts, matches each echoed request to a name in a hard-coded `REQS` table, and reassembles the ISO-TP payloads (accepting reply ids `7E8` and `7DC`).
+2. [`tools/carscanner_solve.py`](../tools/carscanner_solve.py) (this repo) aligns the two series using RPM (a standard formula, u16 x 0.25): it searches the sample offset at which the log-derived RPM and the CSV's `Engine RPM (rpm)` column agree within 1 rpm. It then tries every byte offset and width (u8, i8, u16, i16, u24, u32) of every request, at sample shifts of -2 to +2, keeps candidates with correlation above 0.995, and fits `value = a*x + b`. Columns with fewer than 1000 samples or zero variance are skipped. See [tools/README.md](../tools/README.md).
 3. Coefficients were then rounded to sensible values and units checked (metres vs miles).
 
 Validation as recorded in the code docstring: RPM matched 10,447 of 10,447 aligned samples; the other decoders were fitted by linear regression against the CSV columns. I could not re-run this because the Car Scanner export is not in the repository, so those numbers are taken from the docstring.

@@ -34,13 +34,12 @@ microSD or internal flash, with a web UI and Telegram alerts. Lives at the
 **repo root** (`platformio.ini`, `src/main.cpp`, `src/obd/`, etc.) — there is
 no subfolder for it. Full detail: [esp32-s3.md](esp32-s3.md).
 
-1. From the repo root, edit `src/config.h` directly with your real WiFi and
-   Telegram values (`WIFI_AP_PASS`, `TG_BOT_TOKEN`, `TG_CHAT_ID`, and whatever
-   else you need — see the settings table in [esp32-s3.md](esp32-s3.md)).
-   **This file is tracked by git**, unlike the two boards below. There is no
-   `config.example.h` for this target and no gitignore protecting it. Once you
-   put real secrets in it, do not `git add` or commit it — check `git status`
-   before committing anything at the repo root.
+1. From the repo root, copy `src/config.example.h` to `src/config.h` and edit
+   the copy with your real WiFi and Telegram values (`WIFI_AP_PASS`,
+   `TG_BOT_TOKEN`, `TG_CHAT_ID`, and whatever else you need — see the settings
+   table in [esp32-s3.md](esp32-s3.md)). `.gitignore` excludes `src/config.h`
+   at the repo root, same as the two boards below, so the copy never gets
+   committed.
 2. Build and flash from the repo root:
    ```bash
    pio run -t upload

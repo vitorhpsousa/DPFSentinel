@@ -1,5 +1,7 @@
 # Self-hosting Gitea on CasaOS
 
+> This describes a generic Gitea-on-CasaOS setup; it is not specific to this repository's contents, and this repository does not ship a ready-made `docker-compose.yml` or setup script for it. Apply it to whichever repo (or repos) you want to self-host, writing your own compose file from the sketch below.
+
 Information reflects the Gitea docs as of 2026-09-23 (docs example image: 1.27.3; a web search reported 1.27.2 as latest stable, so re-check Docker Hub tags). Placeholders: `<casaos-ip>`, `<user>`, `<repo>`.
 
 ## Why Gitea (or Forgejo)
@@ -8,16 +10,46 @@ Single Go binary, tiny RAM footprint, SQLite is enough for one user, web UI like
 ## Ports (avoid clashes)
 CasaOS web UI uses port 80. Use host ports **3300** (web) and **2222** (SSH); the container listens on 3000/22 internally. Host port 22 is the host's own sshd, so never map Gitea to 22. Change 3300/2222 in the compose file if taken.
 
+## A docker-compose.yml to start from
+
+Write your own `docker-compose.yml` (there isn't one in this repository to copy); a minimal starting point:
+
+```yaml
+services:
+  gitea:
+    image: docker.gitea.com/gitea:1.27.3
+    container_name: gitea
+    restart: unless-stopped
+    environment:
+      - GITEA__database__DB_TYPE=sqlite3
+      - GITEA__server__DOMAIN=<casaos-ip>
+      - GITEA__server__SSH_DOMAIN=<casaos-ip>
+      - GITEA__server__ROOT_URL=http://<casaos-ip>:3300/
+      - GITEA__server__SSH_PORT=2222         # port shown in clone URLs
+      - GITEA__server__SSH_LISTEN_PORT=22    # built-in SSH server inside the container
+      - GITEA__service__DISABLE_REGISTRATION=true
+    ports:
+      - "3300:3000"
+      - "2222:22"
+    volumes:
+      - /DATA/AppData/gitea/data:/var/lib/gitea
+      - /DATA/AppData/gitea/config:/etc/gitea
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+```
+
+Replace `<casaos-ip>` with your host's actual LAN address. Stay on this rootful image rather than switching to a `-rootless` tag — the volume permissions and SSH port mapping above assume rootful.
+
 ## Install, route A: CasaOS custom app import
 1. On the host: `sudo mkdir -p /DATA/AppData/gitea/data`
-2. CasaOS UI: App Store -> Custom Install (the "+" / import icon) -> Docker Compose -> paste `gitea/docker-compose.yml`, replace `<casaos-ip>`, submit.
+2. CasaOS UI: App Store -> Custom Install (the "+" / import icon) -> Docker Compose -> paste your `docker-compose.yml`, replace `<casaos-ip>`, submit.
 3. CasaOS may add its own labels/metadata (`x-casaos`); a plain compose file should import without them, but I could not verify the current import dialog wording.
 
 ## Install, route B: plain docker compose (over SSH to the host)
 ```
 sudo mkdir -p /DATA/AppData/gitea/data
 sudo mkdir -p /DATA/AppData/gitea && cd /DATA/AppData/gitea
-# copy docker-compose.yml here, edit <casaos-ip>
+# copy your docker-compose.yml here, edit <casaos-ip>
 sudo docker compose up -d
 sudo docker compose logs -f gitea
 ```
@@ -31,9 +63,8 @@ Apps started this way still show in CasaOS as containers, though not with the ap
 5. Optional: add your SSH public key under Settings -> SSH/GPG Keys.
 
 ## Push the local repo
-Review the script `git_first_push.sh`; it refuses to run if secrets or `azure-snapshots`, `logs`, `.pio`, `venv` exist, and never pushes. Then:
+Initialize and push a git repo the normal way — there is no special script for this in this repository. Before your first push, check for secret-like files (tokens, Wi-Fi passwords, personal file paths) and anything you don't want in permanent git history, the same way you would before pushing to GitHub.
 ```
-bash git_first_push.sh /Users/vitor/Claude/OBD
 git remote add origin http://<casaos-ip>:3300/<user>/<repo>.git   # HTTP
 # or: git remote add origin ssh://git@<casaos-ip>:2222/<user>/<repo>.git
 git push -u origin main

@@ -113,10 +113,11 @@ A new `session_N.csv` and `raw_N.log` appear each session. With the engine off s
 - [Disclaimer](docs/disclaimer.md)
 - [Licensing](docs/licensing/options.md): the reasoning behind the chosen licence; see also [applying.md](docs/licensing/applying.md) for the (partially complete) checklist of licensing housekeeping beyond the `LICENSE` file itself — SPDX headers, a formal `NOTICE`, `TRADEMARKS.md` and DCO sign-off are not yet done
 - [Self-hosting on Gitea](docs/self-hosting-gitea.md)
+- [Cross-project notes](docs/cross-project-notes.md): Raspberry Pi companion-project detail carried over from before this repo split off from it — background only; that project is separate and still private, so none of it can be verified from here
 
 ## Secrets
 
-Each target's `src/config.h` holds WiFi passwords and a Telegram bot token. At the repo root, `src/config.h` is tracked by git (no `config.example.h` exists for this target) and currently holds only placeholder values (`"change-me-please"`, empty token/chat ID) — **check `git status` before committing** if you put real values in it. The two board targets under `boards/` each have their own `src/config.example.h`; copy it to `src/config.h` (already covered by `.gitignore` there) and never commit the copy. Full walkthrough: [docs/easy-setup/README.md](docs/easy-setup/README.md#setting-up-your-own-secrets-do-this-after-installing-the-software).
+Each target's `src/config.h` holds WiFi passwords and a Telegram bot token. All three targets (repo root and the two boards under `boards/`) follow the same pattern: copy that target's own `src/config.example.h` to `src/config.h` and fill in your own values. `.gitignore` excludes every target's `src/config.h`, so it never gets committed. Full walkthrough: [docs/easy-setup/README.md](docs/easy-setup/README.md#setting-up-your-own-secrets-do-this-after-installing-the-software).
 
 ## Licence
 

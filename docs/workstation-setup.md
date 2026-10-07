@@ -1,10 +1,19 @@
 # Workstation setup (Windows, Linux, macOS)
 
-This page covers the computer you work from: installing PlatformIO, flashing the ESP32-S3, writing the Raspberry Pi's SD card and reaching the Pi over SSH with keys. Project-side steps are in [esp32-s3.md](esp32-s3.md) and [pi-setup.md](pi-setup.md).
+> **Scope note.** This repo holds the ESP32-S3 firmware only. This page covers
+> installing PlatformIO and flashing the ESP32-S3, per OS. It used to also
+> cover imaging a Raspberry Pi's SD card and reaching it over SSH, from when
+> the ESP32 and Pi loggers shared one project; that Pi-specific imaging/SSH
+> material has moved to
+> [cross-project-notes.md](cross-project-notes.md#workstation-setup-imaging-and-ssh-ing-into-the-pi)
+> for anyone setting up both projects together. The Pi firmware/app itself
+> lives in a separate, currently-private repo (`obd-pi`), not in this one.
+
+This page covers the computer you work from: installing PlatformIO and flashing the ESP32-S3. Project-side steps for the ESP32-S3 are in [esp32-s3.md](esp32-s3.md); the Pi's own setup walkthrough (`pi-setup.md`) lives in the separate `obd-pi` repo and isn't available here.
 
 **How this page was made.** It was written on 2026-09-23 from the official documents listed under "Sources". Commands appear only if they are given in one of those sources. Lines marked **(unverified)** come from general knowledge or from the project, not from a source I read, and have not been run on this project. Nothing here was executed on Windows or Linux; on macOS nothing was executed either.
 
-Assumptions: an ESP32-S3 board with a USB port, a Raspberry Pi 4 and a microSD card. Replace `<pi-user>`, `<pi-host>` and `<pi-ip>` with your own values. Never commit private keys or Wi-Fi passwords.
+Assumptions: an ESP32-S3 board with a USB port. Never commit private keys or Wi-Fi passwords.
 
 ## 0. Choose your OS
 
@@ -13,8 +22,6 @@ Assumptions: an ESP32-S3 board with a USB port, a Raspberry Pi 4 and a microSD c
 | Install PlatformIO | [W1](#w1-install-platformio) | [L1](#l1-install-platformio) | [M1](#m1-install-platformio) |
 | Serial port and permissions | [W2](#w2-usb-serial-port) | [L2](#l2-usb-serial-permissions) | [M2](#m2-usb-serial-port) |
 | Flash the S3 | [W3](#w3-flash-the-s3) | [L3](#l3-flash-the-s3) | [M3](#m3-flash-the-s3) |
-| Image the Pi | [W4](#w4-image-the-pi) | [L4](#l4-image-the-pi) | [M4](#m4-image-the-pi) |
-| SSH with keys | [W5](#w5-ssh-with-keys) | [L5](#l5-ssh-with-keys) | [M5](#m5-ssh-with-keys) |
 | Errors | [Common errors](#common-errors) | | |
 
 Things the same on every OS:
@@ -51,36 +58,9 @@ pio device monitor
 
 (**unverified** on Windows; commands as in the project docs; run from the `obd-esp32` repo root). If the port is not found, check Device Manager for the COM number and try a different cable (many cables are power-only, **unverified** general advice).
 
-### W4. Image the Pi
+**Flashing from WSL.** USB serial devices are not visible inside WSL 2 until attached with usbipd-win (Microsoft Learn): install it (`winget install --interactive --exact dorssel.usbipd-win`), then from an administrator PowerShell run `usbipd list`, `usbipd bind --busid <busid>`, then `usbipd attach --wsl --busid <busid>`, and check with `lsusb` inside WSL. While attached, Windows cannot use the device. You may still need the udev/group steps from the Linux section inside WSL. Flashing from native Windows is simpler.
 
-Raspberry Pi Imager is available for Windows; download the installer from `https://www.raspberrypi.com/software/` and run it. In the customisation screens set a hostname (reachable as `<hostname>.local`), a username and password, Wi-Fi details and the SSH option. For SSH choose public-key authentication and supply your public key (Raspberry Pi documentation). Note the docs describe supplying an RSA public key file in this dialog; whether Imager accepts an Ed25519 key is **unverified**, so generating an RSA key (below) is the safe option for this step.
-
-### W5. SSH with keys
-
-Windows 10 (build 1809) and later have an OpenSSH client as an optional feature. Check and install from an administrator PowerShell (Microsoft Learn):
-
-```powershell
-Get-WindowsCapability -Online | Where-Object Name -like 'OpenSSH*'
-Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
-```
-
-Create a key pair (Microsoft's example uses ECDSA; without `-t` it defaults to Ed25519):
-
-```powershell
-ssh-keygen -t ecdsa
-```
-
-The public key is `id_ecdsa.pub` in `C:\Users\<you>\.ssh\`; the private file has no extension and must stay secret. To keep the key in the agent:
-
-```powershell
-Get-Service ssh-agent | Set-Service -StartupType Automatic
-Start-Service ssh-agent
-ssh-add $env:USERPROFILE\.ssh\id_ecdsa
-```
-
-Connect with `ssh <pi-user>@<pi-ip>` or `ssh <pi-user>@<pi-host>.local` (Raspberry Pi docs). Windows has no `ssh-copy-id`; if you did not set your key in Imager, the Raspberry Pi docs describe a manual copy with `scp` and `chmod` steps written for Linux/macOS shells, which I have not adapted for PowerShell (**unverified**). The simplest route is to paste the public key into Imager's SSH step.
-
-**WSL alternative.** The Raspberry Pi docs say the same SSH commands work in PowerShell or WSL. If you flash from WSL 2, USB serial devices are not visible until attached with usbipd-win (Microsoft Learn): install it (`winget install --interactive --exact dorssel.usbipd-win`), then from an administrator PowerShell run `usbipd list`, `usbipd bind --busid <busid>`, then `usbipd attach --wsl --busid <busid>`, and check with `lsusb` inside WSL. While attached, Windows cannot use the device. You may still need the udev/group steps from the Linux section inside WSL. Flashing from native Windows is simpler.
+Imaging a Raspberry Pi's SD card and SSH-ing into it are not covered here — see [cross-project-notes.md](cross-project-notes.md#workstation-setup-imaging-and-ssh-ing-into-the-pi) if you also have the separate `obd-pi` project.
 
 ## Linux
 
@@ -133,24 +113,6 @@ pio device monitor
 
 (**unverified** on Linux; run from the `obd-esp32` repo root). The port is usually `/dev/ttyACM0` for the native USB (Espressif names `/dev/ttyACM*`). Some desktop services such as ModemManager or brltty are known to grab serial devices; that is common community advice, not from a source I read (**unverified**).
 
-### L4. Image the Pi
-
-Raspberry Pi Imager on Linux: on Raspberry Pi OS `sudo apt install rpi-imager`; on other distributions download the AppImage from the Raspberry Pi site and make it executable (Raspberry Pi docs). Use the customisation screens as in W4: hostname, user, Wi-Fi, SSH with your public key.
-
-### L5. SSH with keys
-
-Generate and install a key (Raspberry Pi docs):
-
-```bash
-ssh-keygen
-ssh-copy-id <pi-user>@<pi-ip>
-ssh <pi-user>@<pi-ip>
-```
-
-The docs' default key path is `~/.ssh/id_rsa` and the private file must stay on your machine. If `ssh-copy-id` is missing, the docs give a manual method: on the Pi `mkdir .ssh` and `chmod 700 .ssh`, from your computer `scp .ssh/id_rsa.pub <pi-user>@<pi-ip>:.ssh/authorized_keys`, then on the Pi `chmod 644 .ssh/authorized_keys` (this overwrites any existing `authorized_keys`).
-
-Reaching `<pi-host>.local` needs mDNS on your workstation (**how to enable it per distribution is not covered by my sources**); otherwise use the IP shown by your router.
-
 ## macOS
 
 ### M1. Install PlatformIO
@@ -177,14 +139,6 @@ pio device monitor
 
 (**unverified** on macOS, though this project's author uses a Mac; run from the `obd-esp32` repo root). If several ports exist, `pio device list` lists them (**unverified**).
 
-### M4. Image the Pi
-
-Download Raspberry Pi Imager for macOS from `https://www.raspberrypi.com/software/`, run it, and use the customisation screens as in W4.
-
-### M5. SSH with keys
-
-macOS ships an OpenSSH client (**unverified** by a source I read, but the Raspberry Pi docs' commands are written for a Unix shell). Use the same commands as L5. `ssh-copy-id` may be absent on macOS; use the manual `scp` method from L5 if so (**unverified** whether it is present on your version). `<pi-host>.local` resolves via macOS's built-in mDNS (**unverified** by a source).
-
 ## Common errors
 
 | Symptom | Likely cause and documented fix |
@@ -193,11 +147,8 @@ macOS ships an OpenSSH client (**unverified** by a source I read, but the Raspbe
 | Port not listed | Bad or charge-only cable (general advice, unverified), missing driver on Windows for boards with a USB-serial chip, or the S3 stuck. Try manual download mode: GPIO0 low, then reset (Espressif). |
 | "Failed to connect" / no bootloader reply | Check the correct port, stable 3.3 V power, and that boot-mode pins are as expected; esptool suggests trying a lower baud such as `--baud 9600` and disconnecting devices from GPIO pins (esptool troubleshooting). Under PlatformIO the baud option name is **unverified**. |
 | Flashes but does not run | esptool suggests a power supply that can deliver enough current, and DIO flash mode for some devices (`esptool write_flash -fm dio`). For PlatformIO the equivalent setting is **unverified**. |
-| WSL cannot see the board | Attach it with usbipd-win (W5) and close serial monitors on the Windows side. |
-| SSH refuses key or asks for password | Public key not in `~/.ssh/authorized_keys` on the Pi, or wrong permissions. See L5. |
-| `.local` name not found | mDNS not available; use the Pi's IP address (**general advice**). |
+| WSL cannot see the board | Attach it with usbipd-win (see W3) and close serial monitors on the Windows side. |
 | Serial monitor restarts the board | Expected. Opening the port resets the S3 and starts a new session (see [esp32-s3.md](esp32-s3.md)). |
-| Bluetooth adapter questions (Pi) | Not a workstation matter; see [pi-setup.md](pi-setup.md). |
 
 ## Sources (all checked 2026-09-23)
 
@@ -209,10 +160,9 @@ macOS ships an OpenSSH client (**unverified** by a source I read, but the Raspbe
 - Espressif, ESP32-S3 USB Serial/JTAG: https://docs.espressif.com/projects/esp-idf/en/stable/esp32s3/api-guides/usb-serial-jtag-console.html
 - esptool troubleshooting: https://docs.espressif.com/projects/esptool/en/latest/esp32s3/troubleshooting.html
 - esptool serial connection: https://docs.espressif.com/projects/esptool/en/latest/esp32s3/esptool/serial-connection.html
-- Raspberry Pi getting started (Imager): https://www.raspberrypi.com/documentation/computers/getting-started.html
-- Raspberry Pi remote access (SSH): https://www.raspberrypi.com/documentation/computers/remote-access.html
-- Microsoft, OpenSSH install: https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_install_firstuse
-- Microsoft, OpenSSH key management: https://learn.microsoft.com/en-us/windows-server/administration/openssh/openssh_keymanagement
 - Microsoft, USB devices in WSL: https://learn.microsoft.com/en-us/windows/wsl/connect-usb
+
+(Sources for imaging a Raspberry Pi's SD card and SSH-ing into it moved with
+that content to [cross-project-notes.md](cross-project-notes.md#workstation-setup-imaging-and-ssh-ing-into-the-pi).)
 
 The page contents were read through a summarising fetch tool, so re-check any command against the source before relying on it, and re-check dates when versions change.

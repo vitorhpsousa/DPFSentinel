@@ -42,12 +42,11 @@ The original firmware. `platformio.ini` and `src/` live at this repo's root —
 no subfolder.
 
 1. Install PlatformIO ([workstation-setup.md](workstation-setup.md) §W1/L1/M1).
-2. Edit `src/config.h` directly with your real WiFi and Telegram values (see
-   the settings table in [esp32-s3.md](esp32-s3.md#configuration-srcconfigh)).
-   **There is no `config.example.h` for this target and no `.gitignore` entry
-   protects it** — it is tracked by git. Once you put real secrets in it, do
-   not `git add` or commit it; run `git status` before every commit at this
-   repo's root.
+2. Copy `src/config.example.h` to `src/config.h` and edit the copy with your
+   real WiFi and Telegram values (see the settings table in
+   [esp32-s3.md](esp32-s3.md#configuration-srcconfigh)). `.gitignore` excludes
+   `src/config.h` at this repo's root, same as the two boards, so the copy
+   never gets committed.
 3. Build and flash, from the repo root, in your own terminal:
    ```bash
    pio run -t upload

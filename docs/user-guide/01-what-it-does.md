@@ -36,5 +36,5 @@ It means: interrupting a regen is undesirable, so keep the engine running if it 
 
 ## Versions
 
-- **Raspberry Pi version:** screen and a web page on your network.
-- **ESP32-S3 version:** logs to an SD card, has a web page, and sends [Telegram messages](03-telegram-alerts-for-users.md). The Pi version has no Telegram support.
+- **Raspberry Pi version:** screen and a web page on your network. This is a separate project, not included in this repository and not yet public.
+- **ESP32-S3 version (this repository):** logs to an SD card, has a web page, and sends [Telegram messages](03-telegram-alerts-for-users.md). The Pi version has no Telegram support. There are three ESP32-S3 builds documented in the main [README](../../README.md#supported-targets); day-to-day use is the same across all of them.

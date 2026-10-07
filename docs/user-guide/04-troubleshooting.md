@@ -9,17 +9,17 @@ Checks, in order:
 
 1. Is the ignition on and the adapter firmly in the OBD port, with its light on?
 2. Give it a minute. The logger retries the adapter every 5 seconds by itself.
-3. Restart the Pi (or the ESP32-S3 by cycling power).
-4. Still nothing: see [pi-setup.md](../pi-setup.md) for the technical checks.
+3. Restart the logger: cycle power on the ESP32-S3 board (or restart the Pi, if you have the separate Pi build).
+4. Still nothing: for the ESP32-S3 builds in this repository, check the serial monitor (`pio device monitor`) and the relevant board's own `board_notes.md` under `boards/<board>/`; see [docs/esp32-s3.md](../esp32-s3.md) and [docs/getting-started.md](../getting-started.md) for the technical checks. The Pi build has its own separate troubleshooting docs (that project is not yet public).
 
 With the engine off, some readings may be blank. That is normal.
 
 ## The adapter only talks to one thing at a time
 
-The adapter accepts **one connection at a time** (the repo says this for Bluetooth LE adapters, and for the OBDLink MX+ on the Pi). If a phone app, another logger or a second device is connected, the logger will look dead.
+The adapter accepts **one connection at a time**. This is documented for the Bluetooth LE adapters used by the ESP32-S3 builds in this repository, and is also true of the OBDLink MX+ used by the separate Pi build. If a phone app, another logger or a second device is connected, the logger will look dead.
 
 - Close phone apps such as Car Scanner, and turn off Bluetooth on the phone if unsure.
-- Do not run the Pi and the ESP32-S3 on the same adapter together.
+- Do not run two loggers (for example a Pi build and an ESP32-S3 build) on the same adapter together.
 
 ## The times or dates look wrong
 
@@ -35,6 +35,3 @@ Neither the Pi nor the ESP32-S3 has a real-time clock.
 - Was the bot started in Telegram, and are the token and chat set correctly? Ask whoever set it up.
 - Remember the ESP32-S3 has to have its clock set first.
 
-## Something looks wrong on the dashboard
-
-One known bug: the dashboard's `/api/schema` page fails, which can affect a small hint in the web page. Logging is not affected.

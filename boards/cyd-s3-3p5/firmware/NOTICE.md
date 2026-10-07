@@ -10,8 +10,8 @@ Some pin numbers, register addresses and chip configuration facts were
 cross-checked against other people's public work on similar hardware, as
 good practice, and are credited here even though facts of this kind
 (what a byte means, what value a register expects) are not protected by
-copyright — see `/Users/vitor/Claude/OBD/legal_review/` for the fuller
-reasoning:
+copyright — see `docs/licensing/options.md` (the "caveat about GPL and PID
+data" note) in the repo root for the fuller reasoning:
 
 - **jlmeredith/ES3C35P** (MIT licence) — pin facts and hardware notes for
   a similar 3.5" ST77922 board.
