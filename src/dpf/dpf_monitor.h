@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #pragma once
 
 // Flags DPF differential pressure that's high while the engine is at

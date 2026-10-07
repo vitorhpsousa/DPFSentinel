@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #include "session_store.h"
 #include <LittleFS.h>
 #include <SD.h>

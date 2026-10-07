@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 // Read-only hardware probe: I2C scan, IMU id, touch, SD card, display, PSRAM.
 // Results go to Serial (USB CDC, 115200) and onto the screen.
 #include <Arduino.h>

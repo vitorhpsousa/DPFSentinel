@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #pragma once
 // Touch page manager: soot / trend / trip / system pages on the 320x480 panel.
 // Call uiBegin() and pagesBegin() after boardInit(). Touch handling lives elsewhere:

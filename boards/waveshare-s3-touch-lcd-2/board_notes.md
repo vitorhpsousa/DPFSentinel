@@ -1,5 +1,28 @@
 # Waveshare ESP32-S3-Touch-LCD-2 board notes
 
+**BLE range in the car [measured across three boards of this general type,
+not a controlled lab test]:** boards in this screen-size/form-factor class
+commonly rely on a small onboard ceramic chip antenna, with no external
+antenna option. Mounted in the car near the OBD-II reader, three separate
+units of this kind struggled to hold a steady BLE connection to the adapter.
+In the same spot, the CYD 3.5" board, a bare ESP32-S3-WROOM-1 (16 MB), and a
+Raspberry Pi 4 with a USB BLE dongle — all using a different antenna
+arrangement — connected fine. This is this project owner's own testing, not
+a lab-grade RF comparison, but it's consistent enough to be worth knowing
+before choosing a board — it's why the CYD 3.5" board is the one actually
+recommended for in-car use day to day (see the main
+[README](../../README.md#supported-targets)). Treat this board as earlier
+bring-up work, not a mounting recommendation, unless you can place it
+somewhere with a clearer line to the adapter.
+
+This isn't specific to this one product: the general lesson is to avoid any
+board whose *only* antenna is a small ceramic chip part with no external
+antenna option (no U.FL/IPEX connector, no printed PCB trace antenna) for
+anything that has to talk BLE from inside a car — plenty of cheap ESP32-C3
+and ESP32-S3 dev boards on the market (including common red-PCB ones) are
+built this way and would likely show the same issue. Check for a printed
+antenna trace or an external connector before buying an alternative board.
+
 Sources (fetched):
 - W1 https://docs.waveshare.com/ESP32-S3-Touch-LCD-2 (overview)
 - W2 https://docs.waveshare.com/ESP32-S3-Touch-LCD-2/Arduino

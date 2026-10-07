@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #pragma once
 // 3.5" 320x480 ST77922 QSPI ESP32-S3 board (CYD-style). Pins proven from the factory firmware,
 // see ../../firmware_analysis.md. The display has no library: raw IDF spi_master QSPI driver +

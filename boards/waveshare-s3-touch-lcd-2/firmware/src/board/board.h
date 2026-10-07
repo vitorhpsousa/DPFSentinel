@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #pragma once
 // Waveshare ESP32-S3-Touch-LCD-2 pins (from Waveshare's demo source; see ../../board_notes.md).
 #include <Arduino.h>

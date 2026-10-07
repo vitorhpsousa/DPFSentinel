@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #include "web_ui.h"
 #include <WebServer.h>
 #include <ESPmDNS.h>

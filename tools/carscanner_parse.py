@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 the DPF Sentinel project
 """Parse a Car Scanner log.txt (raw ELM327 traffic, headers on, echo on) into
 per-request lists of reassembled ISO-TP payloads, so raw bytes can be matched
 against the decoded Car Scanner CSV to reverse-engineer PID byte offsets."""

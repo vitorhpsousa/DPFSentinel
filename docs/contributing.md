@@ -70,6 +70,21 @@ For a different car, start with read-only discovery tooling on that car (rather 
 
 Raw logs and CSVs contain your odometer reading and timestamps. Discovery output (mode 09) contains the **VIN**, and a photo or filename may contain the registration plate. Redact these before sharing a log in an issue. Never commit adapter Bluetooth addresses, Wi-Fi passwords, or Telegram tokens and chat ids.
 
+## Sign off your commits
+
+By contributing you certify the [Developer Certificate of Origin](../DCO) —
+in short, that you wrote the contribution yourself or otherwise have the
+right to submit it under this project's licence. Add your certification to
+every commit with `git commit -s`, which appends a line like:
+
+```
+Signed-off-by: Random J Developer <random@developer.example.org>
+```
+
+There's no automated check for this yet (contributions are rare enough that
+it's reviewed by hand for now), but sign off anyway — it's what the record
+of who-wrote-what actually relies on.
+
 ## Known issues you could fix
 
 <!-- Several issues that used to be listed here (webui/server.py's build_schema(), soot_panel.py's missing

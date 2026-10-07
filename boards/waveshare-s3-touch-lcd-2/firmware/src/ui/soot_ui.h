@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #pragma once
 // Soot panel UI for the 240x320 portrait ST7789 (port of pi/screen/soot_panel.py).
 // Draws into a PSRAM canvas and flushes to the panel only when the rendered

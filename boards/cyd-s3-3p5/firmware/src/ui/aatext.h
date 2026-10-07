@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #pragma once
 // Anti-aliased text (DejaVu Sans, pre-rendered by tools/gen_fonts.py) blended onto a GFXcanvas16.
 // Strings are UTF-8 (the degree sign is "\xC2\xB0"). y is the top of the font's line box (font.height tall).

@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 the DPF Sentinel project
 """Read-only OBD-II discovery run for your car, against any serial-connected
 ELM327-compatible adapter.
 

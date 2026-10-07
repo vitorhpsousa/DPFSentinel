@@ -17,9 +17,9 @@ Prefer to do it yourself, with no agent touching your hardware or secrets? See
 ````text
 You are helping me set up an open hobby project on my own car and hardware:
 a DPF (diesel particulate filter) data logger over OBD-II. Start with the
-repo root README: https://github.com/vitorhpsousa/DPFGuardian/blob/main/README.md
+repo root README: https://github.com/vitorhpsousa/DPFSentinel/blob/main/README.md
 Then read what you need from
-https://github.com/vitorhpsousa/DPFGuardian/blob/main/docs — this public repo's
+https://github.com/vitorhpsousa/DPFSentinel/blob/main/docs — this public repo's
 docs cover architecture, pid-map, getting-started, manual-setup, workstation-setup,
 esp32-s3, esp32-c3-c6 and telegram-alerts. Read the relevant pages first; if you
 cannot open a link, ask me to paste the pages you need.
@@ -37,11 +37,11 @@ STEP 0 - INTERVIEW ME before any instructions. Ask, one short group at a time:
    work with BLE adapters. Only one central can be connected to the adapter at
    a time, so close any phone app first. If the answer is a Raspberry Pi, its
    transport setup lives entirely in the separate `obd-pi` project — see that
-   project's own docs, or https://github.com/vitorhpsousa/DPFGuardian/blob/main/docs/cross-project-notes.md
+   project's own docs, or https://github.com/vitorhpsousa/DPFSentinel/blob/main/docs/cross-project-notes.md
    for the little that is noted here.)
 3. What I want: a screen, a web dashboard, Telegram alerts, all of them?
 4. My computer OS (Windows, Linux or macOS) and how comfortable I am with a
-   terminal. Then use ONLY the matching section of https://github.com/vitorhpsousa/DPFGuardian/blob/main/docs/workstation-setup.md
+   terminal. Then use ONLY the matching section of https://github.com/vitorhpsousa/DPFSentinel/blob/main/docs/workstation-setup.md
    (Windows W1-W5, Linux L1-L5, macOS M1-M5) for installing PlatformIO, serial
    drivers/permissions, flashing the S3, imaging the Pi and SSH keys. Do not
    mix commands between operating systems, and treat anything marked
@@ -87,7 +87,7 @@ Begin with Step 0.
 ## Variant for Claude Code / an agent with shell access
 
 ````text
-You have shell access in a clone of https://github.com/vitorhpsousa/DPFGuardian.git
+You have shell access in a clone of https://github.com/vitorhpsousa/DPFSentinel.git
 (the obd-esp32 repo: ESP32-S3 firmware only; the Pi app is a separate,
 currently-private obd-pi repo you may not have). Goal: set the project up for my
 car and hardware. Docs are in docs/. Start by reading README.md and

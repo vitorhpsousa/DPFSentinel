@@ -4,7 +4,7 @@ Status first: **the project has no formal release process yet** (no version tags
 
 ## What exists today
 
-- This repository **is** under git and hosted on GitHub (`github.com/vitorhpsousa/DPFGuardian`), licensed GPL-3.0-or-later — see the root `LICENSE` file and [README](../../README.md). [code, verified]
+- This repository **is** under git and hosted on GitHub (`github.com/vitorhpsousa/DPFSentinel`), licensed GPL-3.0-or-later — see the root `LICENSE` file and [README](../../README.md). [code, verified]
 - No version constant, `VERSION` file, changelog or git tag anywhere in this repository (`platformio.ini` and each target's `src/config.h`/`config.example.h` carry none) [code, searched]. The separate Pi project is not checked here.
 - The three ESP32-S3 targets in this repository are each flashed independently with PlatformIO (`pio run`, environments `esp32-s3-devkitc-1` at the repo root, and the two boards' own environments under `boards/*/firmware/`) [code]. The separate Pi project is deployed by its own means, not described here.
 - The only implicit "format version" is the CSV header row: files list their own columns (this repo's own column list is in [../architecture.md](../architecture.md); see also [data-formats.md](data-formats.md)), and column names are effectively an API for the dashboard, panel and alert text.

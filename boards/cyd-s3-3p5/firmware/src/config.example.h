@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #pragma once
 
 // ESP32-S3 (WROOM-1) + BLE ELM327 adapter. Same PID set and decoders as
