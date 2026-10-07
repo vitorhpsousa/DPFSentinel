@@ -1,13 +1,13 @@
 # Telegram alerts (ESP32-S3 firmware)
 
-The ESP32-S3 firmware (`esp32-s3-ble/`) can message you on Telegram when a DPF
+The ESP32-S3 firmware (`obd-esp32` repo root) can message you on Telegram when a DPF
 regeneration starts, finishes or is interrupted, send a daily report with the
 session logs, and send a periodic status ping. This guide sets it up end to end.
 
 **Pi app:** the Pi logger also sends regen START / END / INTERRUPTED alerts
-(`pi/alerts/`). Put `TG_BOT_TOKEN` and `TG_CHAT_ID` in the Pi's untracked
+(`alerts/`, in the `obd-pi` repo). Put `TG_BOT_TOKEN` and `TG_CHAT_ID` in the Pi's untracked
 `config_local.py` (never in git), restart `obd-logger`, and test with
-`python3 -m alerts.telegram_alerts test` from `pi/`. Use a separate bot per device.
+`python3 -m alerts.telegram_alerts test` from the `obd-pi` repo root. Use a separate bot per device.
 The Pi sends no daily report or status pings (S3 only).
 
 ## 1. Create the bot
@@ -21,7 +21,7 @@ The Pi sends no daily report or status pings (S3 only).
 
 1. Open your new bot in Telegram and send it any message (press Start).
 2. In a browser open `https://api.telegram.org/bot<BOT_TOKEN>/getUpdates`
-   (this is the method the comment in `esp32-s3-ble/src/config.h` describes).
+   (this is the method the comment in `src/config.h` describes).
 3. Find `"chat":{"id":<CHAT_ID>, ...}`. For a private chat it is a positive number.
 
 **Group:** add the bot to the group, send a message in it (in a group, mention
@@ -34,7 +34,7 @@ in this repo; the firmware just sends `chat_id=<value>` as a form field, see
 
 ## 3. Put them in the firmware
 
-Macros in `esp32-s3-ble/src/config.h`:
+Macros in `src/config.h`:
 
 | Macro | Meaning |
 |---|---|
@@ -70,10 +70,10 @@ and never publish those values (if you ever did, revoke them, section 7).
 The firmware has no secrets file today (it needs a plain `#define`). A simple
 pattern:
 
-1. Move the secrets into `esp32-s3-ble/src/secrets.h` (contains `TG_BOT_TOKEN`,
+1. Move the secrets into `src/secrets.h` (contains `TG_BOT_TOKEN`,
    `TG_CHAT_ID`, `WIFI_STA_*`) and add `#include "secrets.h"` to `config.h`
    in place of those defines.
-2. Add `esp32-s3-ble/src/secrets.h` to `.gitignore`.
+2. Add `src/secrets.h` to `.gitignore`.
 3. Commit `secrets.h.example` with placeholder values.
 
 Also do not paste `getUpdates` output or serial logs publicly: they contain

@@ -1,6 +1,6 @@
 # Proposal: a per-vehicle PID profile file
 
-> **This is a proposal. Nothing on this page exists in the code.** Today PIDs and decoders are hard-coded in `pi/obd/pid_registry.py` and, separately, in `esp32-s3-ble/src/obd/pid_registry.h` + `pid_decode.cpp`, kept in sync by hand. `astra/design/reuse_plan.md` sketches a compile-time C++ profile; this page proposes a data-file alternative that both the Pi and (via a generator) the ESP32 could share. Feedback welcome before anybody builds it.
+> **This is a proposal. Nothing on this page exists in the code.** Today PIDs and decoders are hard-coded in `obd/pid_registry.py` (`obd-pi` repo) and, separately, in `src/obd/pid_registry.h` + `pid_decode.cpp` (`obd-esp32` repo), kept in sync by hand. `astra/design/reuse_plan.md` sketches a compile-time C++ profile; this page proposes a data-file alternative that both the Pi and (via a generator) the ESP32 could share. Feedback welcome before anybody builds it.
 
 ## Goals
 
@@ -102,7 +102,7 @@ Result: `value = raw * scale + add`. A column is blank if the reply is shorter t
 
 - Poll tiers and back-off for unsupported probes (ESP32 today: one attempt every 30 s after 5 failures).
 - CSV header row listing every column, so old files stay readable.
-- `verified` is metadata only; the dashboard could show an "unverified" badge (today `build_schema()` in `pi/webui/server.py` tries this but is broken, see contributing.md known issues).
+- `verified` is metadata only; the dashboard could show an "unverified" badge (today `build_schema()` in `webui/server.py` tries this but is broken, see contributing.md known issues).
 - A `VEHICLE` marker written into the raw log at start so sessions from different cars sharing storage stay distinguishable (idea from `astra/design/reuse_plan.md`).
 
 ## Open questions

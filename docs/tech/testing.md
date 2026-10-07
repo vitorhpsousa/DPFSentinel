@@ -1,10 +1,10 @@
 # Testing
 
-The suite lives in `_repo_prep/tests_draft/` (intended to become `tests/` next to `pi/`, per `_repo_prep/README.md`). It tests the Pi Python code only; there are no firmware tests in the repo. Labels: [code] read, [ran] executed for this page, [unverified].
+The suite lives in `_repo_prep/tests_draft/` (intended to become `tests/` next to the rest of the `obd-pi` repo root, per `_repo_prep/README.md`). It tests the Pi Python code only; there are no firmware tests in the repo. Labels: [code] read, [ran] executed for this page, [unverified].
 
 ## Result of a run
 
-[ran, 2026-09-23] Copied `tests_draft/` to a scratch `tests/` beside symlinks to `pi/` and `tools/`, fresh venv with `pytest pillow requests` (no pyserial): `221 passed, 1 xfailed` in about 2.5 s. `_repo_prep/README.md` quotes "177 pass", which is out of date ( the suite has grown, for example with the BLE and alert tests).
+[ran, 2026-09-23] Copied `tests_draft/` to a scratch `tests/` beside symlinks to the repo root and `tools/`, fresh venv with `pytest pillow requests` (no pyserial): `221 passed, 1 xfailed` in about 2.5 s. `_repo_prep/README.md` quotes "177 pass", which is out of date ( the suite has grown, for example with the BLE and alert tests).
 
 ## Running
 
@@ -13,7 +13,7 @@ python3 -m venv venv && venv/bin/pip install pytest pillow requests
 venv/bin/pytest tests -q
 ```
 
-`tests/conftest.py` puts `pi/` and `tools/` on `sys.path` (so `import config`, `import obd.isotp` work as on the Pi; override the root with `OBD_REPO_ROOT`), sets `sys.dont_write_bytecode`, and installs a stub `serial` module whose `Serial` raises `SerialException`. So pyserial and hardware are not needed. It also provides a `frames` fixture that builds ELM ATH1/ATS0-style reply text (single frame up to 7 bytes, otherwise first + consecutive frames) from a payload [code].
+`tests/conftest.py` puts the repo root and `tools/` on `sys.path` (so `import config`, `import obd.isotp` work as on the Pi; override the root with `OBD_REPO_ROOT`), sets `sys.dont_write_bytecode`, and installs a stub `serial` module whose `Serial` raises `SerialException`. So pyserial and hardware are not needed. It also provides a `frames` fixture that builds ELM ATH1/ATS0-style reply text (single frame up to 7 bytes, otherwise first + consecutive frames) from a payload [code].
 
 `test_soot_panel.py` uses `pytest.importorskip` for Pillow and requests; `test_dpf_and_tools.py` skips the `carscanner_parse` tests if that tool cannot be imported.
 
@@ -50,8 +50,8 @@ Approximate test-function counts per file from `grep`: alerts 11, ble 26, dpf/to
 
 Two jobs on push/PR [code; never executed, since the project is not yet on a git host]:
 
-1. `python`: Python 3.11, `pip install pytest pillow requests ruff`, `ruff check --select E,F,W --ignore E501,E701,E702 pi tools tests`, `pytest tests -q`. pyserial deliberately not installed (stubbed).
-2. `firmware`: PlatformIO cache, copies `esp32-s3-ble/src/secrets.example.h` to `secrets.h`, then `pio run -e esp32-s3-devkitc-1`. **Precondition not yet met**: the workflow assumes credentials have been moved out of `config.h` into a git-ignored `secrets.h` with a committed example (see `_repo_prep/secrets_audit.md`). Until then this job cannot pass without real secrets. [unverified: the PlatformIO build itself was not run.]
+1. `python`: Python 3.11, `pip install pytest pillow requests ruff`, `ruff check --select E,F,W --ignore E501,E701,E702 . tools tests`, `pytest tests -q`. pyserial deliberately not installed (stubbed).
+2. `firmware`: PlatformIO cache, copies `src/secrets.example.h` (`obd-esp32` repo) to `secrets.h`, then `pio run -e esp32-s3-devkitc-1`. **Precondition not yet met**: the workflow assumes credentials have been moved out of `config.h` into a git-ignored `secrets.h` with a committed example (see `_repo_prep/secrets_audit.md`). Until then this job cannot pass without real secrets. [unverified: the PlatformIO build itself was not run.]
 
 ## Not covered
 

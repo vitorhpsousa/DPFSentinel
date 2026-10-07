@@ -1,21 +1,22 @@
 # AI setup prompt
 
 Copy the block below into your own AI assistant (Claude, ChatGPT, etc.) to be walked
-through setting the project up on your hardware and car. Replace `<repo-url>` with
-the address you were given.
+through setting the project up on your hardware and car.
+
+Prefer to do it yourself, with no agent touching your hardware or secrets? See
+[manual-setup.md](manual-setup.md) instead.
 
 ## Prompt (chat assistants)
 
 ````text
 You are helping me set up an open hobby project on my own car and hardware:
 a DPF (diesel particulate filter) data logger over OBD-II. Documentation is at
-<repo-url>/docs (README, architecture, pid-map, pi-setup, workstation-setup, esp32-s3, esp32-c3-c6,
+https://github.com/vitorhpsousa/DPFGuardian/blob/main/docs (README, architecture, pid-map, pi-setup, workstation-setup, esp32-s3, esp32-c3-c6,
 pi3-notes, telegram-alerts). Read the relevant pages first; if you cannot open
 the link, ask me to paste the pages you need.
 
-The project has: a Raspberry Pi 4 app (pi/, Python, OBD adapter over Bluetooth
-Classic or, with a USB dongle, BLE; web dashboard, optional 3.5" screen), an ESP32-S3 firmware (esp32-s3-ble/,
-BLE adapter, SD logging, web UI, Telegram alerts), and only a PLAN for ESP32-C3/C6
+The project has: a Raspberry Pi 4 app (Python, OBD adapter over Bluetooth
+Classic or, with a USB dongle, BLE; web dashboard, optional 3.5" screen), an ESP32-S3 firmware (BLE adapter, SD logging, web UI, Telegram alerts), and only a PLAN for ESP32-C3/C6
 (not implemented). Only the Pi 4 and ESP32-S3 have been tested, on one car.
 
 STEP 0 - INTERVIEW ME before any instructions. Ask, one short group at a time:
@@ -28,7 +29,7 @@ STEP 0 - INTERVIEW ME before any instructions. Ask, one short group at a time:
    phone app first. The BLE path on the Pi has been verified offline only.)
 3. What I want: a screen, a web dashboard, Telegram alerts, all of them?
 4. My computer OS (Windows, Linux or macOS) and how comfortable I am with a
-   terminal. Then use ONLY the matching section of <repo-url>/docs/workstation-setup.md
+   terminal. Then use ONLY the matching section of https://github.com/vitorhpsousa/DPFGuardian/blob/main/docs/workstation-setup.md
    (Windows W1-W5, Linux L1-L5, macOS M1-M5) for installing PlatformIO, serial
    drivers/permissions, flashing the S3, imaging the Pi and SSH keys. Do not
    mix commands between operating systems, and treat anything marked
@@ -75,7 +76,7 @@ Begin with Step 0.
 ## Variant for Claude Code / an agent with shell access
 
 ````text
-You have shell access in a clone of <repo-url>. Goal: set the project up for my
+You have shell access in a clone of https://github.com/vitorhpsousa/DPFGuardian.git. Goal: set the project up for my
 car and hardware. Docs are in docs/. Start by reading docs/README.md and
 docs/architecture.md, then interview me (car make/model/engine/year, DPF yes/no,
 Pi 3/4, ESP32-S3, C3/C6, adapter Classic/BLE/Wi-Fi, screen/web/Telegram, my OS)

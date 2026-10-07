@@ -45,7 +45,7 @@ A licence never stops a person from *using* the code privately. Open source, by 
 - GPL-3.0 plus Section 13: if users interact with a **modified** version over a network, you must offer them the source. Closes the SaaS loophole.
 - Protects: everything GPL does, plus hosted use.
 - Costs: many companies ban AGPL outright, which shrinks the pool of contributors and adopters. For a tool that runs on your own Pi/ESP32 it adds little, since nobody hosts it as a service. It would matter if a future cloud dashboard were added.
-- Section 13 obligations apply to the *dashboard code served to users*; for this repository that is `pi/webui/` and the ESP32 web page, which are the network-facing parts.
+- Section 13 obligations apply to the *dashboard code served to users*; for this project that is `webui/` (`obd-pi` repo) and the ESP32 web page (`obd-esp32` repo), which are the network-facing parts.
 
 ### MPL-2.0
 - **Weak, file-level copyleft.** Changes to MPL-covered *files* must be shared when distributed; you can combine those files with closed code in a larger work.

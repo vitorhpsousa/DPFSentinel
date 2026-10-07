@@ -1,25 +1,25 @@
 # Protocol and PIDs (technical reference)
 
-Scope: the Pi logger (`pi/`). Paths are relative to the repository root. Labels used below: **[code]** read directly from the source, **[measured]** stated by a code comment or project note as observed on the car (not re-testable from this repo), **[inferred]** fitted or guessed, **[unverified]** not checked. The user-level table of columns is in [../pid-map.md](../pid-map.md); this page explains the machinery behind it.
+Scope: the Pi logger (`obd-pi` repo). Paths are relative to the repository root. Labels used below: **[code]** read directly from the source, **[measured]** stated by a code comment or project note as observed on the car (not re-testable from this repo), **[inferred]** fitted or guessed, **[unverified]** not checked. The user-level table of columns is in [../pid-map.md](../pid-map.md); this page explains the machinery behind it.
 
 ## Layers
 
 ```
-PID_TABLE row (pi/obd/pid_registry.py)
-  -> ElmClient.set_header()  ATSH<hdr>          (pi/obd/elm_client.py)
+PID_TABLE row (obd/pid_registry.py)
+  -> ElmClient.set_header()  ATSH<hdr>          (obd/elm_client.py)
   -> ElmClient.query_raw()   "<request><digit>\r"
-  -> extract_payload()       ISO-TP reassembly   (pi/obd/isotp.py)
+  -> extract_payload()       ISO-TP reassembly   (obd/isotp.py)
   -> prefix check, decode()  fixed offsets + scale
 ```
 
 ## ELM327 conversation
 
-[code] `ElmClient.send_command` (`pi/obd/elm_client.py`): clears the input buffer, writes `cmd + "\r"` (ASCII), then polls `read(64)` (non-blocking, `timeout=0`; sleeps 10 ms when empty) until a chunk contains `>` or the deadline passes (default 2.0 s; `query_raw` uses 3.0 s). It strips `>` and whitespace and returns the text. It never raises on timeout; a timeout yields an empty or partial string.
+[code] `ElmClient.send_command` (`obd/elm_client.py`): clears the input buffer, writes `cmd + "\r"` (ASCII), then polls `read(64)` (non-blocking, `timeout=0`; sleeps 10 ms when empty) until a chunk contains `>` or the deadline passes (default 2.0 s; `query_raw` uses 3.0 s). It strips `>` and whitespace and returns the text. It never raises on timeout; a timeout yields an empty or partial string.
 
 Init sequence, `init_adapter()`: `ATZ` (3 s allowance), then `ATE0` (echo off), `ATL0` (linefeeds off), `ATH1` (headers on), `ATS0` (spaces off), `ATSP6` (ISO 15765-4, CAN 11-bit ID, 500 kbit/s), `ATST96` (reply timeout 0x96 x 4 ms = 600 ms). An empty response to any of them makes `init_adapter()` return `False`; `main.connect_adapter` then only prints a warning and carries on.
 
 - `ATSP6` instead of `ATSP0`: [measured, per code comment] `ATDPN` on this car returned protocol 6, and auto-search took 8-10 s on the first query, longer than the logger's own timeout, so every request silently failed.
-- The S3 firmware uses `ATST32` (200 ms) instead of `ATST96` [code: `esp32-s3-ble/src/obd/elm_client.cpp` line 247].
+- The S3 firmware uses `ATST32` (200 ms) instead of `ATST96` [code: `src/obd/elm_client.cpp` line 247, `obd-esp32` repo].
 
 Header switching: `set_header(h)` sends `ATSH<h>` and expects `OK` in the reply; it caches the current header and skips the command if unchanged. Note the cache is not cleared by `init_adapter()`; this only matters if init is re-run on a live `ElmClient`, which `main.py` never does (it builds a new client on reconnect) [code].
 
@@ -29,7 +29,7 @@ Header switching: `set_header(h)` sends `ATSH<h>` and expects `OK` in the reply;
 
 ## Headers and reply IDs
 
-`RX_ID` in `pi/obd/pid_registry.py` [code]:
+`RX_ID` in `obd/pid_registry.py` [code]:
 
 | Transmit (ATSH) | Meaning | Reply CAN id filtered on |
 |---|---|---|
@@ -39,7 +39,7 @@ Header switching: `set_header(h)` sends `ATSH<h>` and expects `OK` in the reply;
 
 A header not in `RX_ID` raises `KeyError` from `PidDef.rx_id`. Reply ids for `7D4 -> 7DC` follow the usual "+8" convention; that the ix35's EPS really is addressed at `7D4` is [measured] only via Car Scanner's log (docstring).
 
-## ISO-TP reassembly (`pi/obd/isotp.py`)
+## ISO-TP reassembly (`obd/isotp.py`)
 
 Input is text with headers on, spaces off, e.g. `7E8034104A2` (single frame) or `7E8104B6103FFFFFFFF\r7E821...` (first + consecutive frames).
 
@@ -53,7 +53,7 @@ Input is text with headers on, spaces off, e.g. `7E8034104A2` (single frame) or 
 3. Consecutive-frame **sequence numbers are not checked** and duplicates/out-of-order frames are not detected [code]. Trailing pad bytes are cut off by `total`.
 4. The logger never sends an ISO-TP flow-control frame; it relies on the adapter doing that (standard ELM327 behaviour, [unverified] for each clone).
 
-`poll_cycle` (`pi/main.py`) then requires `payload.startswith(pid.prefix)`; otherwise the value is `None` (blank CSV cell).
+`poll_cycle` (`main.py`) then requires `payload.startswith(pid.prefix)`; otherwise the value is `None` (blank CSV cell).
 
 Worked example [code, exercised by tests]: `7E804410C1AF8` -> payload `41 0C 1A F8` -> `dec_rpm` reads u16 at offset 2 = `0x1AF8` = 6904, x 0.25 = 1726 rpm.
 
@@ -94,7 +94,7 @@ Notes:
 - The flags have no derivation recorded in code. The comments say `regen_active` stays 1 from warm-up until the distance counter resets and `regen_burning` is the hot phase (EGT roughly above 500 C). [inferred from one reference regen; **not validated over multiple events**.]
 - Soot resolution is one byte: 100/255 = 0.392 g per step [code].
 - Whether "soot in grams" is physically accurate is unknown; it is the ECU's own model value.
-- Mode 22 does not exist on this ECU (`22280B` -> `7F 22 11`; `22E001` on 7C6 -> no data) [measured 2026-09-19, source is a comment in `esp32-s3-ble/src/obd/pid_registry.h`; not re-tested here]. `010B` and `012F` reported unsupported [measured per project notes, not in code].
+- Mode 22 does not exist on this ECU (`22280B` -> `7F 22 11`; `22E001` on 7C6 -> no data) [measured 2026-09-19, source is a comment in `src/obd/pid_registry.h` (`obd-esp32` repo); not re-tested here]. `010B` and `012F` reported unsupported [measured per project notes, not in code].
 - The Pi table has no `0142` battery voltage; the S3 does.
 
 ## Measured vs inferred summary
@@ -104,7 +104,7 @@ Notes:
 | Protocol is ISO 15765-4 CAN 11/500 | measured via `ATDPN` (comment) |
 | Formulas for M rows | regression against Car Scanner export, single session 2026-09-13; RPM matched 10,447 of 10,447 samples (docstring figure) |
 | Regen flag bytes | inferred from one regen |
-| Idle-blockage thresholds (20 hPa, 1100 rpm) | unvalidated defaults in `pi/config.py` |
+| Idle-blockage thresholds (20 hPa, 1100 rpm) | unvalidated defaults in `config.py` |
 | Mode 21 blocks other than `2103`, `21948001`, `211B`, `2101` | not explored in this repo |
 
 ## Reproducing the derivation

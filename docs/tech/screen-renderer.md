@@ -1,4 +1,4 @@
-# Screen renderer (`pi/screen/soot_panel.py`)
+# Screen renderer (`screen/soot_panel.py`)
 
 A full-screen status display for a 3.5" SPI panel on the Pi. This page is about the code; the hardware/overlay setup story is in [../pi-setup.md](../pi-setup.md) (section 8, 3.5" screen). Labels: [code] from source, [unverified] not checked.
 
@@ -9,7 +9,7 @@ A full-screen status display for a 3.5" SPI panel on the Pi. This page is about 
 3. `to_rgb565_bytes(img)` converts to 16-bit little-endian RGB565 (`(r>>3)<<11 | (g>>2)<<5 | (b>>3)`, low byte first), 307,200 bytes.
 4. The frame is written to `/dev/fb0` (opened `wb` each time) only if it differs from the previous frame's bytes. A steady state therefore costs no SPI traffic. The conversion is a pure-Python per-pixel loop (about 153,600 iterations per frame); CPU cost on a Pi 3 or 4 is not measured here [unverified].
 
-Because the module opens `/dev/fb0`, the service runs as root (`pi/scripts/soot-panel.service`, `After=obd-dashboard.service`, `Restart=on-failure`). It ignores touch input.
+Because the module opens `/dev/fb0`, the service runs as root (`scripts/soot-panel.service`, `After=obd-dashboard.service`, `Restart=on-failure`). It ignores touch input.
 
 Framebuffer/overlay assumptions (not enforced in code): RGB565 little-endian framebuffer and 480x320 landscape, which the author obtained with the vendor `mhs35` overlay and `rotate=90` [documented in pi-setup.md, "confirmed with photos", not re-verifiable]. If your driver differs, `FB_W`, `FB_H` and `to_rgb565_bytes` are the places to change.
 
@@ -24,7 +24,7 @@ Framebuffer/overlay assumptions (not enforced in code): RGB565 little-endian fra
 
 The no-data screens are deliberately static: an earlier "Xs old" counter forced a full redraw each second (comment, 2026-09-23). Values missing (`None`) render as an em dash. Stale frames are identical whatever the age, so they are not redrawn (covered by tests).
 
-Grid fields (`DETAIL_FIELDS`, mirrors most of `LIVE_TILES` in `pi/webui/static/app.js` minus EGT and the EPS values): Soot (drawn larger), RPM, Speed, Coolant, Diff P., Cat. Temp (`dpf_zone_temp_c`, catalyst not DPF), Intercooler, MAF, Since Regen, Regen (ACTIVE/OFF/dash), Odometer.
+Grid fields (`DETAIL_FIELDS`, mirrors most of `LIVE_TILES` in `webui/static/app.js` minus EGT and the EPS values): Soot (drawn larger), RPM, Speed, Coolant, Diff P., Cat. Temp (`dpf_zone_temp_c`, catalyst not DPF), Intercooler, MAF, Since Regen, Regen (ACTIVE/OFF/dash), Odometer.
 
 Layout code stacks lines from a running y cursor using measured font heights (`textbbox`, `getmetrics`) instead of fixed offsets, after overlaps were found on the real screen (comments). The regen banner picks the largest bold font that fits 456 px (`_fit_bold_font`), shared by both banner lines. `draw_ink_top_aligned` aligns the ink, not the glyph box, so the em-dash placeholder does not collide with the row above.
 

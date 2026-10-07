@@ -1,10 +1,10 @@
 # Data formats
 
-Everything here is the Pi logger's output (`pi/storage/session_store.py`, `pi/webui/server.py`). The ESP32-S3 has a different column set and order; see [../architecture.md](../architecture.md). Labels: [code] read from source, [unverified] not checked.
+Everything here is the Pi logger's output (`storage/session_store.py`, `webui/server.py`). The ESP32-S3 has a different column set and order; see [../architecture.md](../architecture.md). Labels: [code] read from source, [unverified] not checked.
 
 ## Files in `LOG_DIR`
 
-`LOG_DIR` defaults to `/home/ix35/obd-logs` (`pi/config.py`).
+`LOG_DIR` defaults to `/home/ix35/obd-logs` (`config.py`).
 
 | File | Written by | Notes |
 |---|---|---|
@@ -53,13 +53,13 @@ Tab-separated, one line per request: `unix_time<TAB>header<TAB>request+digit<TAB
 
 `unix_time,label,raw_response`, with labels from `CALIBRATION_REQUESTS` (`21948001`, `2103`, `211B`, `2101_eps`).
 
-## HTTP API (`pi/webui/server.py`)
+## HTTP API (`webui/server.py`)
 
 Stdlib `ThreadingHTTPServer` on `0.0.0.0:DASHBOARD_PORT` (8080). Read-only; no authentication; responses have `Cache-Control: no-store`. Whole CSV files are parsed on every request (fine for hobby volumes) [code].
 
 | Path | Response |
 |---|---|
-| `/`, `/index.html`, `/app.js`, `/style.css` | files from `pi/webui/static/` |
+| `/`, `/index.html`, `/app.js`, `/style.css` | files from `webui/static/` |
 | `/api/live` | see below |
 | `/api/schema` | see below |
 | `/api/sessions` | array of session summaries, newest file (by mtime) first; empty sessions omitted |
@@ -94,7 +94,7 @@ Source: `build_live()`. Picks the newest `session_*.csv` by mtime.
 
 `build_schema()` returns `{"pids": [{"name","unit"} ...], "dpf_idle_pressure_threshold_hpa", "dpf_idle_rpm_ceiling", "dpf_temp_warn_threshold_c"}`.
 
-Status: in the current source this works (the `p.confirmed` reference described in older notes, and in `../architecture.md` / `../contributing.md`, is gone; those drafts are stale) and `tests_draft/test_webui.py::test_build_schema_serialises` covers it. The frontend uses `dpf_temp_warn_threshold_c` (300 by default) to tint the "EGT Before DPF" tile amber (`app.js`, `LIVE_TILES` `warnKey`). Note the comment in `pi/config.py` says this threshold is for `dpf_zone_temp_c`; the UI applies it to `egt_before_dpf_c` [code mismatch].
+Status: in the current source this works (the `p.confirmed` reference described in older notes, and in `../architecture.md` / `../contributing.md`, is gone; those drafts are stale) and `tests_draft/test_webui.py::test_build_schema_serialises` covers it. The frontend uses `dpf_temp_warn_threshold_c` (300 by default) to tint the "EGT Before DPF" tile amber (`app.js`, `LIVE_TILES` `warnKey`). Note the comment in `config.py` says this threshold is for `dpf_zone_temp_c`; the UI applies it to `egt_before_dpf_c` [code mismatch].
 
 ### /api/sessions summary
 
