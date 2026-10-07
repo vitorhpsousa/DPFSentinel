@@ -154,6 +154,7 @@ static bool runReport(bool force, uint32_t today) {
                String(v("egt_before_dpf_c"), 0) + " C, battery " + String(v("control_module_v"), 1) + " V\n";
     else
         msg += "No live engine reading right now (car off or adapter out of range).\n";
+    if (strlen(KOFI_URL) > 0) msg += "\nFound this useful? " + String(KOFI_URL) + "\n";
     if (files.empty() && !force) { nvPut("tg_day", today); gLastResult = "nothing new to send"; return true; }
     if (!sendMessage(msg)) { gLastResult = "message failed"; return false; }
 

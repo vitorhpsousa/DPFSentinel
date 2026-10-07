@@ -88,6 +88,9 @@
 #define TG_SEND_MIN 30
 #define TG_SEND_RAW 1            // also upload the raw_N.log files
 #define TG_MIN_BYTES 3000        // skip blank sessions (no adapter, no data)
+// Appended as one extra line on the daily report only (not on every alert) —
+// leave empty to switch this off entirely.
+#define KOFI_URL ""
 #define TG_ALERT_REGEN 1        // message when a DPF regeneration starts / finishes
 // Periodic status ping while online — fires only while actually connected, so
 // no backlog of these builds up while it's offline. This will send one every
