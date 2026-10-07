@@ -184,6 +184,33 @@ engine computer already has and cannot tell you the filter is actually
 blocked or safe. See [disclaimer.md](../disclaimer.md) for the full version.
 Don't interact with the screen or your phone while driving.
 
+## A note on privacy
+
+This device never needs an internet connection to work, and nobody out on
+the wider internet can find it or control it — there's no way in from
+outside your own WiFi.
+
+What it *does* do: it makes its own small WiFi hotspot (like your home
+router does) so your phone can open its live-data web page, and it can also
+join your home WiFi so you can check on it from the house. Either way,
+**being on that WiFi is the only way in** — and the live-data page itself
+isn't password protected. So:
+
+- **Treat the device's hotspot password like your home WiFi password.**
+  Anyone who knows it and connects to it could see your driving data while
+  connected — nothing more, they can't damage the car or the device.
+- **The same is true while it's joined to your home WiFi**: anyone already
+  on your home network could open the same page.
+- This is normal for small home-gadget projects like this one, not a mistake
+  in the setup. Just don't hand the hotspot password to strangers, the same
+  way you wouldn't hand out your home WiFi password.
+
+The Telegram alerts are separate and safe: they go over a normal, secure
+connection straight to your own phone's chat with the bot, the same way any
+messaging app works. Nobody else can read those messages, and the device
+only ever listens to your own chat — anyone else messaging the bot is
+silently ignored.
+
 ## Not ready to build one yourself?
 
 If all of this still sounds like too much, that's completely fine — ask
