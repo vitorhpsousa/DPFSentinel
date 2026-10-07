@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #include "touch.h"
 #include <Wire.h>
 #include "esp32-hal-i2c.h"

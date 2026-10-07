@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 #include "pid_registry.h"
 
 static inline float u8(const uint8_t *p, size_t i) { return (float)p[i]; }

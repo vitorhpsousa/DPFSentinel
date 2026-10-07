@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 the DPF Sentinel project
 """Given Car Scanner's raw log.txt + its decoded CSV (same session), find for
 each CSV column the request, byte offset(s), and linear scale that reproduce
 it. Alignment offset is found from RPM (known formula)."""

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 // Range test: every 10 s prints the WiFi networks heard (with RSSI) and the BLE devices heard
 // (with RSSI), flagging names that look like an OBD adapter. It also joins "Vitoi" (demo network)
 // and reports the RSSI and IP. Nothing is written to flash or the network apart from joining.

@@ -2,7 +2,7 @@
 
 > **This is not legal advice.** It is a plain-language comparison written by an AI assistant from general knowledge and from reading this repository. Licences are legal instruments and rules differ by country. Before you publish, read the licence texts yourself and, if money or a company is involved, ask a lawyer (or your national open-source body, or the SFC / FSF / OSI / Open Source Initiative resources). Nothing here has been checked by a lawyer.
 >
-> **Status:** the recommendation below (section 10) was adopted for the code — this repository's root `LICENSE` file and README now state GPL-3.0-or-later. The owner has decided against a trademark claim (no `TRADEMARKS.md` — not applicable, see [applying.md](applying.md)) and is deliberately deferring the rest (CC BY-SA 4.0 for docs, DCO, SPDX headers) as non-blocking housekeeping, not an open gap. Section 7 below still explains the trademark trade-offs for reference, even though this project isn't pursuing one.
+> **Status:** the recommendation below (section 10) was adopted for the code — this repository's root `LICENSE` file and README now state GPL-3.0-or-later. SPDX headers, a root `NOTICE` and a DCO process are all now in place too (see [applying.md](applying.md)). The owner has decided against a trademark claim (no `TRADEMARKS.md` — not applicable) and is deliberately deferring only CC BY-SA 4.0 for docs/images as non-blocking housekeeping. Section 7 below still explains the trademark trade-offs for reference, even though this project isn't pursuing one.
 
 ## 1. What you are deciding
 

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 // Boot self-test: plays each alert quietly. Assumes nothing else uses Wire; we begin it here at 400 kHz
 // (in the real app Wire is begun once by the touch code, same pins/speed).
 #include <Arduino.h>

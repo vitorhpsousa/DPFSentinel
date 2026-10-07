@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 // Speaker alerts for the 3.5" ESP32-S3 board: ES8311 codec + I2S + PA enable on GPIO1.
 // Assumes Wire is ALREADY begun (SDA38/SCL39 @ 400 kHz, shared with touch 0x55); this module never calls Wire.begin().
 #pragma once

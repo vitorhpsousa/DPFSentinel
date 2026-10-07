@@ -27,8 +27,8 @@ unless there is truly no other way, and if there isn't, explain what the
 command does in plain English before I type it.
 
 The steps, in order, are documented at:
-https://github.com/vitorhpsousa/DPFGuardian/blob/main/docs/easy-setup/README.md (this page — the shopping list and the
-config file walkthrough) and https://github.com/vitorhpsousa/DPFGuardian/blob/main/docs/easy-setup/windows.md (or mac.md /
+https://github.com/vitorhpsousa/DPFSentinel/blob/main/docs/easy-setup/README.md (this page — the shopping list and the
+config file walkthrough) and https://github.com/vitorhpsousa/DPFSentinel/blob/main/docs/easy-setup/windows.md (or mac.md /
 linux.md, whichever matches my computer) for installing the software and
 flashing the board. Read those pages first — ask me to paste them if you can't
 open the link. Then ask me which operating system I'm on and follow only that
@@ -76,6 +76,12 @@ directly, on its own.
    Display 3.5 Inch IPS Capacitive Touch 320x480 ST77922 HMI Module,
    XiaoZhiAI" (around £20–25). A USB-C cable comes with most listings, but
    make sure you have one — see the warning below.
+   If you're tempted by a different/cheaper board instead: avoid any board
+   whose only antenna is a small ceramic chip part with no external
+   connector (no U.FL/IPEX plug, no printed antenna trace on the board
+   itself) — three separate boards of that type were tried in this project
+   and none could hold a steady Bluetooth connection to the OBD adapter once
+   mounted in the car. The CYD board above doesn't have this problem.
 2. **A Bluetooth OBD-II adapter.** It must be **BLE** ("Bluetooth Low
    Energy" / "Bluetooth 4.0+"), not "Bluetooth Classic" — the board can only
    talk to the BLE kind. Look for one that says BLE or "Bluetooth 4.0/5.0" in

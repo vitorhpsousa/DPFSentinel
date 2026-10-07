@@ -1,4 +1,4 @@
-# DPFGuardian — ESP32 OBD DPF Logger
+# DPF Sentinel — ESP32 OBD DPF Logger
 
 A small, read-only data logger that watches the **diesel particulate filter (DPF)** of a 2014 Hyundai ix35 1.7 CRDi (engine D4FD) through an OBD-II adapter, on ESP32-S3 hardware. It records the engine computer's own DPF figures once a second, shows them live on a web dashboard and (on the touchscreen boards) a colour-coded panel, and sends a Telegram message when a regeneration starts, finishes or is interrupted.
 
@@ -29,7 +29,7 @@ Already comfortable with a terminal? Start with [docs/getting-started.md](docs/g
 |---|---|---|---|
 | ESP32-S3 + BLE ELM327 adapter (original build) | repo root | Working on the author's car | [docs/esp32-s3.md](docs/esp32-s3.md), [docs/telegram-alerts.md](docs/telegram-alerts.md) |
 | CYD 3.5" touchscreen board | [boards/cyd-s3-3p5/](boards/cyd-s3-3p5/) | Main in-car board, working on the author's car | [docs/easy-setup/](docs/easy-setup/README.md), [board notes](boards/cyd-s3-3p5/board_notes.md) |
-| Waveshare ESP32-S3-Touch-LCD-2 (2") | [boards/waveshare-s3-touch-lcd-2/](boards/waveshare-s3-touch-lcd-2/) | Earlier bring-up, working | [board notes](boards/waveshare-s3-touch-lcd-2/board_notes.md) |
+| Waveshare ESP32-S3-Touch-LCD-2 (2") | [boards/waveshare-s3-touch-lcd-2/](boards/waveshare-s3-touch-lcd-2/) | Earlier bring-up, working; boards this size commonly use a small onboard antenna with no external option, which struggled for BLE range near the OBD adapter in testing — the CYD board is the one actually used day to day in the car | [board notes](boards/waveshare-s3-touch-lcd-2/board_notes.md) |
 
 Only **one car** (the ix35) has ever been verified. The PID map is specific to its engine computer; another car needs its own discovery and verification work ([docs/contributing.md](docs/contributing.md)). An AI-assisted setup walkthrough is in [docs/ai-setup-prompt.md](docs/ai-setup-prompt.md); to host the repository yourself see [docs/self-hosting-gitea.md](docs/self-hosting-gitea.md).
 
@@ -64,7 +64,7 @@ Not verified or not available:
 Full detail in [docs/esp32-s3.md](docs/esp32-s3.md) and [docs/getting-started.md](docs/getting-started.md). In short, with [PlatformIO](https://platformio.org/) installed ([per-OS setup](docs/workstation-setup.md)):
 
 ```bash
-git clone https://github.com/vitorhpsousa/DPFGuardian.git && cd DPFGuardian
+git clone https://github.com/vitorhpsousa/DPFSentinel.git && cd DPFSentinel
 # edit src/config.h with your own WiFi/Telegram values first — see docs/esp32-s3.md
 pio run -t upload
 pio device monitor

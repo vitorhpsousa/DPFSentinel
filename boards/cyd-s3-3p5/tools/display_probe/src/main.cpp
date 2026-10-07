@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 // Display + touch probe, 3.5" ESP32-S3 (ST77922, 320x480, QSPI).  NOT FLASHED YET.
 //
 // Pins used (only these; all from vendor/config.h + HARDWARE.md):

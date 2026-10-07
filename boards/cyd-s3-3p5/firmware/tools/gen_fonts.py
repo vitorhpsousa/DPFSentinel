@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 the DPF Sentinel project
 """Render DejaVu Sans / Bold into 8-bit alpha glyph bitmaps -> src/ui/fonts_aa.{h,cpp}.
 Usage: python3 tools/gen_fonts.py   (needs Pillow)"""
 import os

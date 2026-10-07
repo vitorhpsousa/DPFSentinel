@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 the DPF Sentinel project
 // QMI8658 IMU (I2C 0x6B, SDA 48 / SCL 47): filtered accel/gyro, car-frame
 // longitudinal/lateral G, tilt, motion detection and harsh-driving events.
 #pragma once
