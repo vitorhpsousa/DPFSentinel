@@ -23,7 +23,7 @@ pio device monitor        # opening the serial port RESETS the board and starts 
 
 ## Configuration (`src/config.h`)
 
-The file in the repository currently holds real Wi-Fi passwords and a Telegram token and chat id. **Do not publish it.** Use placeholders such as `<your-wifi>` and `<your-password>` and keep the real file untracked. Settings by name:
+Copy `src/config.example.h` to `src/config.h` and fill in your own Wi-Fi passwords and Telegram token/chat id there. `.gitignore` excludes `src/config.h`, so it stays untracked — never remove that exclusion or force-add the file. Settings by name:
 
 | Setting | Meaning |
 |---|---|

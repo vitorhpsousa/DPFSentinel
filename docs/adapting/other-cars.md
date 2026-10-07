@@ -14,26 +14,27 @@
 
 | Generic (reusable) | Car-specific (this is what you replace) |
 |---|---|
-| ELM327 client, BLE and rfcomm transports (`obd/elm_client.py`, `ble_transport.py`), ISO-TP reassembly (`obd/isotp.py`), session storage (CSV plus raw log), web dashboard plumbing, Telegram transport | PID table and decoders (`obd/pid_registry.py` in `obd-pi`, `src/obd/pid_registry.h`, `pid_decode.cpp` in `obd-esp32`), protocol set with `ATSP6`, reply ids (`RX_ID` / `rxIdFor()`), derived columns, regen-flag logic, thresholds, dashboard tile names |
+| ELM327 client, BLE and rfcomm transports (`obd/elm_client.py`, `ble_transport.py` in the separate Pi project; `src/obd/elm_client.cpp` in each ESP32-S3 target here), ISO-TP reassembly (`obd/isotp.py` / `src/obd/isotp.cpp`), session storage (CSV plus raw log), web dashboard plumbing, Telegram transport | PID table and decoders (`src/obd/pid_registry.h` + `pid_decode.cpp`, duplicated per ESP32-S3 target in this repo at the root `src/` and under each `boards/*/firmware/src/`; the separate Pi project keeps its own `obd/pid_registry.py`), protocol set with `ATSP6`, reply ids (`RX_ID` / `rxIdFor()`), derived columns, regen-flag logic, thresholds, dashboard tile names |
 
-`astra/design/reuse_plan.md` lists the ix35-specific spots in more detail and proposes a profile-driven refactor (not implemented). See also [pid-profile-format.md](pid-profile-format.md).
+A profile-driven refactor that would remove the need to hand-edit each target's registry separately has been sketched but not implemented anywhere; see [pid-profile-format.md](pid-profile-format.md) for the proposal.
 
 ## The method
 
 ### Step 0: What you need
 
 - The same OBD adapter type you will log with (ELM327 clone, OBDLink MX+, BLE). Some clones do not support the frame-count digit or headers reliably; note which.
-- A Raspberry Pi with the logger installed (see [../pi-setup.md](../pi-setup.md)) **or** the discovery firmware in `astra/discovery` (ESP32, PlatformIO; not built or tested yet).
+- A read-only discovery tool that can log raw adapter traffic. The three ESP32-S3 targets in this repository log already-known PIDs; they do not probe for unknown ones. Use [`../../tools/discover.py`](../../tools/discover.py) instead — it runs on any computer with a serial-connected ELM327-type adapter (pyserial only) and does the discovery workflow below. See [`../../tools/README.md`](../../tools/README.md). **(proposed)**: a discovery mode built into one of this repo's ESP32-S3 targets, so no separate computer is needed.
 - Optional but strongly recommended: a phone app that can show the values you want *and* save a raw log (Car Scanner can export raw ELM327 traffic plus a decoded CSV). This is your ground truth.
 
 ### Step 1: Identify the car and protocol
 
-Run the read-only discovery (Pi version):
+Run the discovery tool against the adapter:
 
 ```bash
-# bind the adapter first (see pi-setup.md), ignition on, engine off
-cd astra/discovery_pi
-python3 discover.py --device /dev/rfcomm0 --sample-seconds 60
+# ignition on, engine off, adapter bound/paired for your platform
+cd tools
+pip install pyserial
+python3 discover.py --device <your-adapter-device> --sample-seconds 60
 ```
 
 It runs these stages and writes every request and reply to a log file (`--out` picks the name):
@@ -66,7 +67,7 @@ Start with the **standard PIDs** the car declares: they need no reverse engineer
 There are two sources for manufacturer PIDs, in order of trust:
 
 1. **Your own capture from a phone app that already shows the value** (see Step 3). Verified.
-2. **Community PID lists** (forums, Torque PID files, OBD Fusion PID packs). These are **hints to probe, never facts.** They are often for a different model year or engine. `discover.py` probes some Astra-related candidates and labels them UNVERIFIED in its source.
+2. **Community PID lists** (forums, Torque PID files, OBD Fusion PID packs). These are **hints to probe, never facts.** They are often for a different model year or engine. [`tools/discover.py`](../../tools/discover.py) probes some community-sourced candidates from other vehicles' forum threads and labels them UNVERIFIED in its source.
 
 ### Step 3: Capture a reference
 
@@ -78,26 +79,26 @@ Why the raw log matters: it contains the exact request bytes (including the fram
 
 ### Step 4: Decode
 
-The repository has a two-step method (see [../contributing.md](../contributing.md#adding-a-pid-the-car-scanner-method)):
+A two-step decode method (split the raw log into requests/reassemble the ISO-TP payloads, then fit `value = a*x + b` against a reference CSV by byte offset and width) is described in [../contributing.md](../contributing.md) and implemented in [`tools/carscanner_parse.py`](../../tools/carscanner_parse.py) and [`tools/carscanner_solve.py`](../../tools/carscanner_solve.py) (see [`tools/README.md`](../../tools/README.md)). It is how the ix35's own decoders were originally derived.
 
-1. `tools/carscanner_parse.py` splits the raw log into requests and reassembles the ISO-TP payloads. Its `REQS` table is hard-coded to the ix35's requests and it accepts reply ids `7E8` and `7DC` only. **Edit `REQS` (and the accepted ids) for your car.**
-2. `tools/carscanner_solve.py log.txt export.csv` aligns the two series by RPM (it needs request `010C` in the log and a CSV column named `Engine RPM (rpm)`), then tries every byte offset and width of every request and fits `value = a*x + b`, keeping candidates with correlation above 0.995. Needs numpy. Columns with under 1000 samples or no variance are skipped.
+1. Split the raw log into requests and reassemble the ISO-TP payloads per request. The ix35 decode used a hard-coded request table and accepted reply ids `7E8` and `7DC` only — any equivalent tool needs its own table for your car.
+2. Align the raw-log series with a reference CSV (for example by RPM, matching a `010C` request in the log to an "Engine RPM" column), then try every byte offset and width of every request and fit `value = a*x + b`, keeping candidates with a high correlation (0.995 was used for the ix35). Columns with too few samples or no variance should be skipped.
 3. Read candidates critically: a strong correlation with an odd scale is often the wrong byte. Round coefficients, check units.
 
 Limits: this only finds linear numeric fits. Flags (regen active) and enumerations need manual work, comparing raw bytes before and during the event. The ix35's two regen flags came from one reference regen and are marked as not validated.
 
 **(proposed)** A generic replay tool that takes the profile file (below) and a raw log and prints decoded values, so you can validate without a CSV. Not written.
 
-For a **quick look at raw replies** without a reference: set `CALIBRATION_MODE = True` in `config.py`; `main.py` then dumps every raw byte of each request in `CALIBRATION_REQUESTS` (in `pid_registry.py`) to `calibration.csv` for matching by timestamp against a phone screen. Put it back to `False` afterwards.
+For a **quick look at raw replies** without a reference on the ESP32-S3 targets in this repository: dump every raw byte of each request you are probing and match it by timestamp against a phone screen, then remove the probe once decoded (there is no built-in `CALIBRATION_MODE` equivalent today).
 
 ### Step 5: Add the decoders
 
-For each confirmed value:
+For each confirmed value, add it to **every** target that should expose it:
 
-- `obd/pid_registry.py`: a `dec_*` function and a `PidDef(name, unit, header, request_hex, frames, prefix, decode)` row. Offsets count from the service byte.
-- ESP32 (`obd-esp32` repo): `src/obd/pid_registry.h` and `pid_decode.cpp`.
-- If replies come from a new id, extend `RX_ID` (Pi) or `rxIdFor()` (ESP32).
-- Change `ATSP6` if your car uses another protocol (`elm_client.py`, `elm_client.cpp`).
+- Each ESP32-S3 target in this repository has its own copy: `src/obd/pid_registry.h` + `src/obd/pid_decode.cpp` at the repo root, and the same two files under each of `boards/cyd-s3-3p5/firmware/src/obd/` and `boards/waveshare-s3-touch-lcd-2/firmware/src/obd/`. These are kept in sync by hand today.
+- The separate Pi project keeps its own equivalent (`obd/pid_registry.py`, a `dec_*` function and a `PidDef(...)` row) outside this repository.
+- If replies come from a new id, extend `rxIdFor()` in the relevant target's `elm_client.cpp`.
+- Change `ATSP6` if your car uses another protocol (each target's `src/obd/elm_client.cpp`).
 
 Keep both registries in sync by hand. Column names are effectively an API (dashboard, panel and Telegram text look columns up by name). **(proposed)** The profile format would replace this manual step.
 

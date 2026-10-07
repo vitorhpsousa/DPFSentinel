@@ -5,9 +5,9 @@ Status: draft thinking, not market research. Nothing here is validated. Numbers 
 ## Facts from the repository
 
 - Verified on **one car** only; other cars need discovery work.
-- Two builds: Pi 4 (Bluetooth Classic adapter) and ESP32-S3 (BLE adapter, Telegram alerts). Only the Pi has been used on the real car for long.
-- No automated tests. Web dashboards have no authentication.
-- Licence undecided.
+- This repository holds three ESP32-S3 builds (BLE adapter, Telegram alerts): the original board-root build, and two touchscreen boards (CYD 3.5", Waveshare 2"). A Raspberry Pi 4 build (Bluetooth Classic adapter) also exists as a separate, still-private project outside this repository; per its own history it was the build used on the real car for the longest.
+- No automated tests in this repository. Web dashboards have no authentication.
+- Licence: GPL-3.0-or-later (decided; see [licensing/options.md](../licensing/options.md)).
 
 This is the central business constraint: the tool is only as valuable as the number of car models with verified data.
 
@@ -43,7 +43,7 @@ Workshops on reading DPF data, and a garage certification.
 
 ## Open-source considerations
 
-- **Licence choice shapes the model** (permissive vs copyleft vs source-available). Undecided; take legal advice.
+- **Licence choice shapes the model** (permissive vs copyleft vs source-available). Decided for this repository: GPL-3.0-or-later (copyleft) — see [licensing/options.md](../licensing/options.md). Take legal advice on how that interacts with any business model built on it.
 - Competitors can copy the code; your advantage becomes trust, service, verified car data and speed.
 - Community car profiles are valuable but need quality control; a wrong PID map gives wrong data on a customer's car.
 - Trademarks and warranties: keep the "no warranty" and "not a diagnostic tool" position honest.

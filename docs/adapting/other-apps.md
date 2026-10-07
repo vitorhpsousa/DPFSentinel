@@ -1,6 +1,6 @@
 # Using the logger with other apps and tools
 
-Labels: **[exists]** is in this repository today; **[proposed]** is a design idea only; **[external]** is a third-party feature described from general knowledge and **not tested with this project**.
+Labels: **[exists]** is in this repository today; **[proposed]** is a design idea only; **[external]** is a third-party feature described from general knowledge and **not tested with this project**. Several rows below describe the separate, still-private Raspberry Pi project's dashboard (`webui/server.py`, `config.py`), which is **not part of this repository**; they are marked "Pi" and kept for context since the ESP32 web UI's `/api/live` shape is modelled on it, but nothing there can be inspected or relied on from this repo alone.
 
 ## What the logger actually produces today
 
@@ -8,7 +8,7 @@ Labels: **[exists]** is in this repository today; **[proposed]** is a design ide
 |---|---|---|
 | `session_N.csv`: one row per poll (about 1 Hz), header row lists columns, columns named like `engine_rpm`, `dpf_soot_level_g`, `dpf_diff_pressure_hpa`, with `unix_time` when the clock is known | Pi: `LOG_DIR` (`config.py`); ESP32: SD card (`/obd`) | **[exists]** |
 | `raw_N.log`: tab-separated raw adapter traffic (time, header, request, reply) | Pi: next to the CSV | **[exists]** |
-| Web dashboard and JSON: `/`, `/api/live`, `/api/sessions`, `/api/sessions/<name>`, `/api/schema` (Pi, port `DASHBOARD_PORT`, default 8080, no authentication, HTTP) | Pi | **[exists]**; `/api/schema` currently raises (see contributing.md known issues) |
+| Web dashboard and JSON: `/`, `/api/live`, `/api/sessions`, `/api/sessions/<name>`, `/api/schema` (port `DASHBOARD_PORT`, default 8080, no authentication, HTTP) | Separate Pi project, not this repository | **[exists in the Pi project]**; status of `/api/schema` there is not tracked by this repository |
 | ESP32 web UI: `/api/live`, `/api/files`, `/api/time`, `/api/send`, `/api/report`, `/api/testalert`, `/api/statusnow` | ESP32 | **[exists]** (endpoint shapes not re-documented here) |
 | Telegram messages for regen start/end and reports | Pi and ESP32 | **[exists]** |
 | MQTT, InfluxDB, Prometheus, or any push export | none | **not present** (searched the source: no references) |
@@ -20,7 +20,7 @@ Security note: the dashboard has no login and speaks plain HTTP. Do not expose i
 ## Car Scanner (phone app, ELM327)
 
 - **Role today [exists]**: a *reference*. The decoders were derived from a Car Scanner session, and the repository parses its raw log and CSV export (`tools/carscanner_parse.py`, `carscanner_solve.py`). Not a data consumer.
-- **Live alongside the logger**: works only if the adapter allows two connections. The OBDLink MX+ can pair with a phone and the Pi at once in some modes; BLE adapters usually accept one central only (see the Pi BLE dongle note in the project docs). Otherwise run them at different times.
+- **Live alongside the logger**: works only if the adapter allows two connections. The OBDLink MX+ (used by the separate Pi project) can pair with a phone and the Pi at once in some modes; BLE adapters, as used by this repository's ESP32-S3 targets, usually accept one central only. Otherwise run them at different times.
 - **Export back into the project [exists, partial]**: CSV and raw log import is for decoding, not for the dashboard. **[proposed]** an importer that turns a Car Scanner CSV into a `session_N.csv` so past drives show in the dashboard.
 - **Feeding Car Scanner from the logger**: not possible; it talks to the adapter directly.
 
@@ -38,20 +38,23 @@ Security note: the dashboard has no login and speaks plain HTTP. Do not expose i
 
 ## Home Assistant
 
-- **Nothing exists.** There is no Home Assistant integration.
-- **Poll the dashboard as a REST sensor [proposed, easy]**: Home Assistant's `rest` / `rest_sensor` can read `http://<pi>:8080/api/live` and extract `latest.dpf_soot_level_g` with a value template. Works with today's endpoint and no change to this project. Untested. `stale` and `age_s` let you show "unknown" when the car is off.
+- **Nothing exists.** There is no Home Assistant integration in this repository.
+- **Poll the dashboard as a REST sensor [proposed, easy]**: Home Assistant's `rest` / `rest_sensor` can read an `/api/live` endpoint. **Note the two `/api/live` shapes differ** and a value template for one will not work against the other:
+  - Separate Pi project: `{"has_data", "stale", "age_s", "latest": {...}, ...}` — value template `value_json.latest.dpf_soot_level_g if value_json.has_data else none`.
+  - This repository's ESP32-S3 targets (verified against `src/web/web_ui.cpp`): `{"t", "link", "session", ..., "values": {...}}`, with no `has_data`/`stale`/`latest` wrapper — a value template here would read `value_json.values.dpf_soot_level_g if value_json.link else none` instead.
+  Untested either way; both are just read-only JSON over HTTP on the local network, so no firmware change would be needed to try it.
 
   ```yaml
-  # untested sketch, Home Assistant configuration.yaml
+  # untested sketch, Home Assistant configuration.yaml — ESP32-S3 targets in this repository
   rest:
-    - resource: http://PI_ADDRESS:8080/api/live
+    - resource: http://ESP32_ADDRESS/api/live
       scan_interval: 30
       sensor:
         - name: "DPF soot"
-          value_template: "{{ value_json.latest.dpf_soot_level_g if value_json.has_data else none }}"
+          value_template: "{{ value_json.values.dpf_soot_level_g if value_json.link else none }}"
           unit_of_measurement: "g"
   ```
-- **MQTT [proposed]**: a small publisher (in the `obd-pi` repo, using `paho-mqtt`) sending each new row to topics such as `obd/<vehicle>/dpf_soot_level_g` with retained state, plus Home Assistant MQTT discovery messages. The car is only reachable when it is on the home network, so retain the last value and publish an availability topic (`online`/`offline`). Also consider the alerts: regen start/finish is already detected in `alerts/regen_watch.py` and could publish events instead of, or as well as, Telegram.
+- **MQTT [proposed]**: a small publisher sending each new row to topics such as `obd/<vehicle>/dpf_soot_level_g` with retained state, plus Home Assistant MQTT discovery messages. The car is only reachable when it is on the home network, so retain the last value and publish an availability topic (`online`/`offline`). Also consider the alerts: regen start/finish is already detected by `src/report/regen_watch.cpp` in this repository's ESP32-S3 targets (and by the separate Pi project's own `alerts/regen_watch.py`) and could publish events instead of, or as well as, Telegram.
 - **ESP32**: could publish to MQTT directly over Wi-Fi in the same way. Needs a library (for example PubSubClient or AsyncMqttClient) and RAM budget check on the S3. **[proposed]**.
 - **Telegram** remains the existing alert path **[exists]**.
 
@@ -67,7 +70,7 @@ Security note: the dashboard has no login and speaks plain HTTP. Do not expose i
 
 | Tool | What is possible | Status |
 |---|---|---|
-| Any browser on the same network | Use the dashboard at `http://<pi-ip>:8080/` | **[exists]** |
+| Any browser on the same network | Use the dashboard at `http://<esp32-ip>/` (port 80, verified in `src/web/web_ui.cpp`) for this repository's ESP32-S3 targets, or `http://<pi-ip>:8080/` for the separate Pi project | **[exists]** |
 | Spreadsheet (Excel, LibreOffice, Google Sheets) | Open `session_N.csv` directly; header names are self-describing | **[exists]** |
 | Python/pandas/Jupyter | `pd.read_csv("session_N.csv")` and plot | **[exists]** (works on the CSV as-is) |
 | Telegram | regen and report messages | **[exists]** |

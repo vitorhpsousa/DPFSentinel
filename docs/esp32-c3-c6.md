@@ -3,9 +3,10 @@
 ## Status: planned, not implemented
 
 There is **no C3 or C6 code and no PlatformIO environment** in this repo.
-The only firmware environments are `platformio.ini`
-(`esp32-s3-devkitc-1`); `esp32/` and `astra/discovery/` are other S3-era
-projects. Everything below is a plan plus reasoning. Nothing here has been run.
+The only firmware environment at the repo root is `platformio.ini`'s
+`esp32-s3-devkitc-1`; the two touchscreen boards under `boards/` each have
+their own, separate PlatformIO project (see the main README's "Supported
+targets" table). Everything below is a plan plus reasoning. Nothing here has been run.
 
 | Item | Status |
 |---|---|

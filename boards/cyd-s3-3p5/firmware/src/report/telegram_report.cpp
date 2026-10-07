@@ -283,6 +283,7 @@ static String statusReplyText() {
             out += "[INFERRED, from this car's own measured rates] roughly " + String(steadyMi, 0) + "-" + String(steadyMiMax, 0) +
                    " mi of steady driving, or " + String(shortMi, 0) + "-" + String(shortMiMax, 0) +
                    " mi of short cold trips, before the next regen.\n";
+            out += "(Guess from 3 regens on this car, not a warning light -- see the disclaimer.)\n";
         }
     }
     return out;

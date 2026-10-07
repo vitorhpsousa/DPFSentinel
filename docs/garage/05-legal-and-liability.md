@@ -9,7 +9,7 @@ The [disclaimer](../disclaimer.md) states the tool is not a diagnostic tool, is 
 ## Garage-specific points to raise with an adviser
 
 ### Disclaimer and no warranty
-- Open-source licences usually disclaim warranty. The licence for this repository is still undecided. A licence does not stop *you* being liable to *your customers* for how you use the tool.
+- Open-source licences usually disclaim warranty. This repository is licensed GPL-3.0-or-later (see [LICENSE](../../LICENSE) and [licensing/options.md](../licensing/options.md)), which disclaims warranty, but a licence does not stop *you* being liable to *your customers* for how you use the tool.
 - Make your own customer-facing wording: the data is supporting evidence, not a diagnosis or guarantee. Do not claim it certifies a filter as clean, legal or road-worthy.
 - Do not use it as the sole basis for a repair, a refusal, or a safety statement.
 
@@ -40,5 +40,5 @@ The [disclaimer](../disclaimer.md) states the tool is not a diagnostic tool, is 
 1. Solicitor reviews your customer wording and consent form.
 2. Insurer confirms cover in writing.
 3. Data protection notice and retention policy in place.
-4. Decision on the repository licence.
+4. ~~Decision on the repository licence~~ — done: GPL-3.0-or-later (see [LICENSE](../../LICENSE)). Remaining licensing housekeeping (SPDX headers, NOTICE, TRADEMARKS.md, DCO) is tracked in [licensing/applying.md](../licensing/applying.md).
 5. Written process for a customer complaint or a battery/electrical fault.

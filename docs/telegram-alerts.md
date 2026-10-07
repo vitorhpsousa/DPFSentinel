@@ -4,11 +4,11 @@ The ESP32-S3 firmware (`obd-esp32` repo root) can message you on Telegram when a
 regeneration starts, finishes or is interrupted, send a daily report with the
 session logs, and send a periodic status ping. This guide sets it up end to end.
 
-**Pi app:** the Pi logger also sends regen START / END / INTERRUPTED alerts
-(`alerts/`, in the `obd-pi` repo). Put `TG_BOT_TOKEN` and `TG_CHAT_ID` in the Pi's untracked
-`config_local.py` (never in git), restart `obd-logger`, and test with
-`python3 -m alerts.telegram_alerts test` from the `obd-pi` repo root. Use a separate bot per device.
-The Pi sends no daily report or status pings (S3 only).
+**Pi app:** the separate, still-private Pi logger project also sends regen START / END /
+INTERRUPTED alerts, and does not send a daily report or status pings (S3 only). Use a
+separate bot token per device — do not reuse one bot token across the Pi and an
+ESP32-S3 board. Internals of the Pi's alerting code are in
+[cross-project-notes.md](cross-project-notes.md#telegram-alerts-pi).
 
 ## 1. Create the bot
 
