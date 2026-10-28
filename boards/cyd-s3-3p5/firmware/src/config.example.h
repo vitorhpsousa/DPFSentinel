@@ -60,11 +60,11 @@
 #define WIFI_AP_PASS "YOUR_WIFI_PASSWORD"
 // Also join the home network when in range (reachable at http://obd-logger.local
 // or the IP printed on Serial). Leave the SSID empty to run hotspot-only.
-#define WIFI_STA_SSID "Vitoi"
+#define WIFI_STA_SSID "MyHomeWifi"
 #define WIFI_STA_PASS "YOUR_WIFI_PASSWORD"
 // Second network to try (e.g. a phone hotspot) — tried alternately with the
 // one above. Leave WIFI_STA_SSID2 empty to disable it.
-#define WIFI_STA_SSID2 "Vitoi2"
+#define WIFI_STA_SSID2 "MyPhone"
 #define WIFI_STA_PASS2 "YOUR_WIFI_PASSWORD"
 // Message Telegram with the network name and IP each time it joins one.
 #define TG_ALERT_WIFI 1

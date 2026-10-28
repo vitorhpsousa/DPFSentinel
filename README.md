@@ -1,5 +1,12 @@
 # DPF Sentinel — ESP32 OBD DPF Logger
 
+> **This repository has moved.** DPF Sentinel now lives in one codebase for both ESP32-S3 boards:
+> **https://github.com/vitorhpsousa/DPFSentinel-ESP32-S3**. It has the portrait 3.5" screen, the next-regen
+> estimate, the dash-mileage offset, safer SD logging and up-to-date setup guides. This repo is archived and no
+> longer updated; please open issues and pull requests there.
+>
+> The Waveshare ESP32-S3-Touch-LCD-2 board in this repo is not carried over to the new one.
+
 A small, read-only data logger that watches the **diesel particulate filter (DPF)** of a 2014 Hyundai ix35 1.7 CRDi (engine D4FD) through an OBD-II adapter, on ESP32-S3 hardware. It records the engine computer's own DPF figures once a second, shows them live on a web dashboard and (on the touchscreen boards) a colour-coded panel, and sends a Telegram message when a regeneration starts, finishes or is interrupted.
 
 > **Not a diagnostic tool.** It reads numbers the car already reports and cannot tell you the filter is blocked. Do not rely on it for safety or repair decisions. See [docs/disclaimer.md](docs/disclaimer.md).

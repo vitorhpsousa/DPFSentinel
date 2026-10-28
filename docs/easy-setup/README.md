@@ -118,7 +118,7 @@ chat with anyone, AI or human.
 3. Find these two lines and put your own WiFi network name and password
    between the quote marks, replacing the placeholder text exactly:
    ```
-   #define WIFI_STA_SSID "Vitoi"
+   #define WIFI_STA_SSID "MyHomeWifi"
    #define WIFI_STA_PASS "YOUR_WIFI_PASSWORD"
    ```
 4. **Optional — Telegram alerts on your phone.** If you want a message when

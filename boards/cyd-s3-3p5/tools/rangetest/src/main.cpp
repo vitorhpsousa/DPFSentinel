@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 the DPF Sentinel project
 // Range test: every 10 s prints the WiFi networks heard (with RSSI) and the BLE devices heard
-// (with RSSI), flagging names that look like an OBD adapter. It also joins "Vitoi" (demo network)
+// (with RSSI), flagging names that look like an OBD adapter. It also joins HOME_SSID below
 // and reports the RSSI and IP. Nothing is written to flash or the network apart from joining.
 #include <Arduino.h>
 #include <WiFi.h>
 #include <NimBLEDevice.h>
 
-static const char *HOME_SSID = "Vitoi";
-static const char *HOME_PASS = "10203040";   // demo network, per the owner
+static const char *HOME_SSID = "MyHomeWifi";
+static const char *HOME_PASS = "";   // your network password
 static bool looksLikeObd(const String &n) {
   String u = n; u.toUpperCase();
   return u.indexOf("OBD") >= 0 || u.indexOf("ELM") >= 0 || u.indexOf("KONNWEI") >= 0 || u.indexOf("VLINK") >= 0 || u.indexOf("IOS-") >= 0;
